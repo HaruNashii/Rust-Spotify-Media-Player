@@ -1,0 +1,1 @@
+playerctl volume 1
