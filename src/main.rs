@@ -3,215 +3,251 @@ use std::fs::File;
 use std::io::{Write, Read};
 use std::time::{Duration, Instant};
 use std::process::{Command, Stdio};
+use std::sync::{Arc, Mutex};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
+use sdl2::EventPump;
+use sdl2::render::{Canvas, Texture};
+use sdl2::video::Window;
+use sdl2::rect::Rect;
+use sdl2::render::TextureCreator;
 
 
 
-//======================================THE STRUCT THAT IS USED PER EVERY COMMAND============================================
-struct CommandValues <'a>
+//================================================GENERATORS============================================
+fn font_generator<'a>(additional_text: &str, texture_creator: &'a TextureCreator<sdl2::video::WindowContext>, size: u16, color: Color, path: &str, text: String, x: i32, y: i32) -> (Texture<'a>, Rect)
 {
-    style: &'a str,
-    argument: &'a str,
-    exec: &'a str,
-}
-
-
-
-
-
-
-
-
-
-
-fn command()
-{
-//=============================THE DEFAULT CONFIG OF THE STRUCT USED PER EVERY COMMAND========================================
-    let default_values = CommandValues
-    {
-        style: "bash",
-        argument: "-c", 
-        exec: "None",
-    };
-
-
-
-//===============================================INFO FOR RENDER COMMANDS============================================
-    let info_values = CommandValues
-    {
-        exec: "clear && echo Status: && playerctl status && echo Music Name: && playerctl metadata xesam:title && echo Volume: && playerctl volume && echo Shuffle: && playerctl shuffle",
-        ..default_values
-    };
-    let mut display_info = Command::new(info_values.style);
-    display_info.arg(info_values.argument);
-    display_info.arg(info_values.exec);
-
-
-
-//================================================SHUFFLE COMMANDS============================================
-    let shuffle_value = CommandValues
-    {
-        exec : "playerctl shuffle",
-        ..default_values
-    };
-    let mut shuffle_info = Command::new(shuffle_value.style);
-    shuffle_info.arg(shuffle_value.argument);
-    shuffle_info.arg(shuffle_value.exec);
-    shuffle_info.stdout(Stdio::piped());
-
-
-    let shuffle_on_value = CommandValues
-    {
-        exec: "playerctl shuffle on",
-        ..default_values
-    };
-    let mut shuffle_on = Command::new(shuffle_on_value.style);
-    shuffle_on.arg(shuffle_on_value.argument);
-    shuffle_on.arg(shuffle_on_value.exec);
-
-
-    let shuffle_off_value = CommandValues
-    {
-        exec: "playerctl shuffle off",
-        ..default_values
-    };
-    let mut shuffle_off = Command::new(shuffle_off_value.style);
-    shuffle_off.arg(shuffle_off_value.argument);
-    shuffle_off.arg(shuffle_off_value.exec);
-
-
-
-//================================================BASIC MEDIA COMMANDS============================================
-    let next_value = CommandValues 
-    {
-        exec: "playerctl next",
-        ..default_values
-    };
-    let mut next = Command::new(next_value.style);
-    next.arg(next_value.argument);
-    next.arg(next_value.exec);
-
-
-    let previous_value = CommandValues 
-    {
-        exec: "playerctl previous",
-        ..default_values
-    };
-    let mut previous = Command::new(previous_value.style);
-    previous.arg(previous_value.argument);
-    previous.arg(previous_value.exec);
-
-
-    let pause_play_value = CommandValues 
-    {
-        exec: "playerctl play-pause",
-        ..default_values
-    };
-    let mut pause_play = Command::new(pause_play_value.style);
-    pause_play.arg(pause_play_value.argument);
-    pause_play.arg(pause_play_value.exec);
-
-
-
-//================================================VOLUME COMMANDS============================================
-    let volume_value = CommandValues
-    {
-        exec: "./scripts/volume.sh",
-        ..default_values
-    };
-    let mut volume = Command::new(volume_value.style);
-    volume.arg(volume_value.argument);
-    volume.arg(volume_value.exec);
-
-
-
-//=========================================PASS THE COMMANDS TO OTHER FUNCTION==========================================
-window(&mut volume, &mut shuffle_info, &mut shuffle_on, &mut shuffle_off, &mut display_info, &mut next, &mut previous, &mut pause_play);
-}
-
-
-
-
-
-
-
-
-
-
-//================================================WINDOW============================================
-const WINDOW_WIDTH: u32 = 800;
-const WINDOW_HEIGHT: u32 = 600;
-
-fn window(volume: &mut Command, shuffle_info: &mut Command, shuffle_on: &mut Command, shuffle_off: &mut Command, display_info: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command)
-{
-    let sdl_inicializator = sdl2::init().unwrap();
-    let video_system = sdl_inicializator.video().unwrap();
-    let window = video_system
-    .window("Media", WINDOW_WIDTH, WINDOW_HEIGHT)
-    .position_centered()
-    .resizable()
-    .build()
-    .map_err(|e| e.to_string())
+    let ttf_context = sdl2::ttf::init().unwrap();
+    let font = ttf_context.load_font(path, size).unwrap();
+    let surface = font
+    .render(&format! ("{}{}", additional_text, text))
+    .blended(color)
     .unwrap();
 
+    let texture = texture_creator
+    .create_texture_from_surface(&surface).unwrap();
 
-    let mut canvas = window.into_canvas()
-   .accelerated()
-   .build()
-   .map_err(|e| e.to_string())
-   .unwrap();
+    let font_rect = Rect::new(x, y, surface.width(), surface.height());
+
+    (texture, font_rect)
+}
 
 
 
-//================================================WINDOW============================================
-    let mut shuffle_info_string = String::from("");
-    shuffle_info_string.clear();
-    shuffle_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut shuffle_info_string).unwrap();
-    shuffle_info_string.pop();
+
+
+fn gen_command(shell: &str, arg_one: &str, arg_two: &str) -> Command
+{
+        let mut command = Command::new(shell);
+        command.arg(arg_one);
+        command.arg(arg_two);
+        return command;
+}
+
+
+
+
+
+fn gen_command_with_output(shell: &str, arg_one: &str, arg_two: &str) -> Command 
+{
+
+        let mut command_with_output = Command::new(shell);
+        command_with_output.arg(arg_one);
+        command_with_output.arg(arg_two)
+        .stdout(Stdio::piped());
+        return command_with_output;
+}
+
+
+
+
+
+
+//================================================FONTS DATA============================================
+fn fonts(canvas: &mut Canvas<Window>, shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String)
+{
+let texture_creator = canvas.texture_creator();
+let default_path = "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf";
+let default_color = Color::RGB(255, 255, 255);
+let default_size: u16 = 25;
+
+let (volume_text, volume_rect) = font_generator("Volume:", &texture_creator, default_size, default_color, default_path, volume_command_string, 0, 0);
+
+let (shuffle_text, shuffle_rect) = font_generator("Shuffle:", &texture_creator, default_size, default_color, default_path, shuffle_string, 0, 50);
+
+let (music_name_text, music_name_rect) = font_generator("Name:", &texture_creator, default_size, default_color, default_path, music_name_string, 0, 100);
+
+let (status_text, status_rect) = font_generator("Status:", &texture_creator, default_size, default_color, default_path, status_info_string, 0, 150);
+
+
+canvas.copy(&volume_text, None, volume_rect).unwrap();
+canvas.copy(&shuffle_text, None, shuffle_rect).unwrap();
+canvas.copy(&music_name_text, None, music_name_rect).unwrap();
+canvas.copy(&status_text, None, status_rect).unwrap();
+canvas.present();
+}
+
+
+
+
+
+//=============================THE COMMANDS DATA========================================
+fn command(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>) 
+{
+//=============================THE DEFAULT CONFIG USED PER EVERY COMMAND========================================
+    let default_shell: &str = "bash";
+    let default_argument: &str = "-c"; 
+
+
+
+//================================================COMMANDS============================================
+    let mut volume_info = gen_command_with_output(default_shell, default_argument, "playerctl volume");
+    let mut status_info = gen_command_with_output(default_shell, default_argument, "playerctl status");
+    let mut music_name_info = gen_command_with_output(default_shell, default_argument, "playerctl metadata xesam:title");
+    let mut shuffle_info = gen_command_with_output(default_shell, default_argument, "playerctl shuffle");
+    let mut shuffle_on = gen_command(default_shell, default_argument, "playerctl shuffle on"); 
+    let mut shuffle_off = gen_command(default_shell, default_argument, "playerctl shuffle off"); 
+    let mut next = gen_command(default_shell, default_argument, "playerctl next"); 
+    let mut previous = gen_command(default_shell, default_argument, "playerctl previous"); 
+    let mut pause_play = gen_command(default_shell, default_argument, "playerctl play-pause"); 
+    let mut volume = gen_command(default_shell, default_argument, "./scripts/volume.sh"); 
+
+    
+
+    system 
+    (
+        &mut volume_info,
+        &mut status_info,
+        &mut music_name_info,
+        &mut shuffle_info,
+        &mut volume,
+        &mut shuffle_off,
+        &mut shuffle_on,
+        &mut next,
+        &mut previous,
+        &mut pause_play,
+        &mut event_pump,
+        canvas,
+    );
+
+}
+
+
+
+
+//======================================THE WINDOW DATA AND INICIALIZATOR============================================
+const WINDOW_WIDTH: u32 = 800;
+const WINDOW_HEIGHT: u32 = 600;
+fn window()
+{       
+            let sdl_inicializator_creator = Arc::new(Mutex::new(sdl2::init().unwrap())); 
+            let sdl_started = Arc::clone(&sdl_inicializator_creator);
+            let sdl_guard = sdl_started.lock().unwrap();
+            let video_system = sdl_guard.video().unwrap();
+            let window = video_system
+            .window("Media", WINDOW_WIDTH, WINDOW_HEIGHT)
+            .position_centered()
+            .resizable()
+            .build()
+            .map_err(|e| e.to_string())
+            .unwrap();
+            
+            let mut canvas = window.into_canvas()
+            .accelerated()
+            .build()
+            .map_err(|e| e.to_string())
+            .unwrap();
+
+
+            let mut event_pump = sdl_guard.event_pump().unwrap();
+            command(&mut event_pump, &mut canvas);
+}
+ 
+
+
+
+
+//================================================THE WINDOW RENDER============================================
+fn render_scene(canvas: &mut Canvas<Window>, shuffle_info: String, music_name_string: String, status_info_string: String, volume_command_string: String)
+{
+            canvas.set_draw_color(Color::RGB(0, 0, 0));
+            canvas.clear();
+
+            fonts(canvas, shuffle_info, music_name_string, status_info_string, volume_command_string);
+}
+
+
+
+
+
+//================================================SYSTEM FUNCTION============================================
+fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info: &mut Command, shuffle_info: &mut Command, volume: &mut Command, shuffle_on: &mut Command, shuffle_off: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command,  event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
+{
 
 
 
 //================================================VOLUME SETUP============================================
-    let volume_change: f64 = 0.1;
-    let mut volume_float: f64 = 1.0;
+    let volume_change: f64 = 0.100000000000;
+    let mut volume_float: f64 = 1.0000000000;
 
 
 
-//=======================================TIMER SETUP FOR DISPLAY INFO AND THE KEYCHECKER=======================================
-    let timer_activator = true;
-    let mini_timer_duration_1 = Duration::from_millis(16);
-    let mini_timer_duration_2 = Duration::from_millis(116);
-    let timer_duration = Duration::from_millis(350);
-    let mut timer = Instant::now();
-    let mut mini_timer_1 = Instant::now();
-    let mut mini_timer_2 = Instant::now();
+//===================================TIMER SETUP FOR DISPLAY INFO AND FOR THE KEYCHECKER=======================================
+    let display_timer_activator = true;
+    let display_timer_duration = Duration::from_millis(1);
+    let mut display_timer = Instant::now();
+    
+    let mut keychecker_timer_activator = true;
+    let keychecker_timer_duration_1 = Duration::from_millis(100);
+    let keychecker_timer_duration_2 = Duration::from_millis(200);
+    let mut keychecker_timer_1 = Instant::now();
+    let mut keychecker_timer_2 = Instant::now();
+ 
 
 
-
-//================================================LOOP============================================
-    let mut event_pump = sdl2::init().unwrap().event_pump().unwrap();
-    'running: loop
+//===========================================COMMANDS STRINGS============================================
+    let volume_string = String::from("playerctl volume ");
+    let mut music_name_string = String::from("");
+    let mut status_info_string = String::from("");
+    let mut shuffle_string = String::from("");
+    let mut volume_command_string = String::from("");
+    'running: loop 
     {
-        std::thread::sleep(Duration::from_millis(16));
-  
-
-
-//================================================WINDOW============================================
-        let volume_string = String::from("playerctl volume ");
         let float_string = volume_float.to_string();
-        let volume_combined = volume_string + &float_string;
+        let volume_combined = volume_string.clone() + &float_string;
+        while volume_command_string.len() >= 4 { volume_command_string.pop();}
+        std::thread::sleep(Duration::from_millis(16));
 
 
 
-//================================================TIMER FOR DISPLAY INFO============================================
-        if timer.elapsed() >= timer_duration && timer_activator
+//=======================================RENDER SCENE ACTIVATOR AND STRING PASSING============================================
+        render_scene(canvas, shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
+
+
+
+//===============================================ACTIVATOR OF THE COMMANDS IN LOOP============================================
+        if display_timer.elapsed() >= display_timer_duration && display_timer_activator
         {
-            display_info.spawn().unwrap();
-            timer = Instant::now();
+            music_name_string.clear();
+            music_name_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut music_name_string).unwrap();
+            music_name_string.pop();
+    
+            status_info_string.clear();
+            status_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut status_info_string).unwrap();
+            status_info_string.pop();
+                        
+            shuffle_string.clear();
+            shuffle_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut shuffle_string).unwrap();
+            shuffle_string.pop();
+            
+            volume_command_string.clear();
+            volume_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut volume_command_string).unwrap();
+            volume_command_string.pop();
+            
+            display_timer = Instant::now();
         }
-
+        
 
 
 //================================================MEDIA KEYCHECKER============================================
@@ -226,44 +262,37 @@ fn window(volume: &mut Command, shuffle_info: &mut Command, shuffle_on: &mut Com
 
 
 //================================================SHUFFLE KEYCHECKER============================================
-                Event::KeyDown { keycode: Some(Keycode::I), .. } =>
-                {
-                    if shuffle_info_string.len() == 3 
-                    {
-                        if mini_timer_1.elapsed() > mini_timer_duration_1 
-                        {   
-                            shuffle_on.spawn().unwrap();
-                            shuffle_info_string.clear();
-                            shuffle_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut shuffle_info_string).unwrap();
-                            shuffle_info_string.pop();
-                            mini_timer_1 = Instant::now();
-                            mini_timer_2 = Instant::now();
-                        }
+            Event::KeyDown { keycode: Some(Keycode::I), .. } =>
+            {
+                    if keychecker_timer_1.elapsed() > keychecker_timer_duration_1 && !keychecker_timer_activator
+                    {   
+                        shuffle_on.spawn().unwrap();
+
+                        keychecker_timer_activator = true;
+                        keychecker_timer_1 = Instant::now();
+                        keychecker_timer_2 = Instant::now();
                     }
-                    
-                
-                    if shuffle_info_string.len() == 2  
+
+
+                    if keychecker_timer_2.elapsed() > keychecker_timer_duration_2 && keychecker_timer_activator
                     {
-                        if mini_timer_2.elapsed() > mini_timer_duration_2 
-                        {
-                            shuffle_off.spawn().unwrap();
-                            shuffle_info_string.clear();
-                            shuffle_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut shuffle_info_string).unwrap();
-                            shuffle_info_string.pop();
-                            mini_timer_1 = Instant::now();
-                            mini_timer_2 = Instant::now();
-                        }
+                        shuffle_off.spawn().unwrap();
+  
+                        keychecker_timer_activator = false;
+                        keychecker_timer_1 = Instant::now();
+                        keychecker_timer_2 = Instant::now();
                     }
-                }
+            }
 
 
 
 //================================================AUDIO KEYCHECKER============================================
                 Event::KeyDown { keycode: Some(Keycode::K), .. } => 
                 {   
-                    if volume_float <= 1.0
+                    if volume_float < 1.1
                     {
-                        volume_float += &volume_change;
+                        println!("{}", volume_combined);
+                        volume_float += volume_change;
                         File::create("scripts/volume.sh").unwrap().write_all(volume_combined.as_bytes()).unwrap();
                         volume.spawn().unwrap();
                     }
@@ -272,45 +301,41 @@ fn window(volume: &mut Command, shuffle_info: &mut Command, shuffle_on: &mut Com
 
                 Event::KeyDown { keycode: Some(Keycode::J), .. } => 
                 {
-                    if volume_float >= volume_change
+                    if volume_float > -0.1
                     {
-                        volume_float -= &volume_change;
+                        println!("{}", volume_combined);
+                        volume_float -= volume_change;
                         File::create("scripts/volume.sh").unwrap().write_all(volume_combined.as_bytes()).unwrap();
                         volume.spawn().unwrap();
                     }
                 }        
-                
+ 
 
-                Event::Quit { .. } => break 'running,
+
+//================================================QUIT HANDLER============================================
+                sdl2::event::Event::Quit { .. } |
+                sdl2::event::Event::KeyDown { keycode: Some(sdl2::keyboard::Keycode::Escape), .. } => { break 'running; }
                 _=> {}
             }
         }
-
-
-
-//================================================RENDER SCREEN============================================
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.clear();
-        canvas.present();
     }
 }
 
 
 
+
+
 //================================================MAIN============================================
-
-
-
-
-
-
-
-
-
-
 fn main() 
 {
-    command();
+//                                                gen_command()                         font_generator
+//                                                     ^                                       ^
+//                                                     ^                                       ^ 
+//the sequal for function activation is (Window() > command() > system() > render_scene() > fonts())
+//                                                     v
+//                                                     v
+//                                           gen_command_with_output()
+window();
 }
 
 
