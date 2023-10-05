@@ -111,7 +111,8 @@ fn command(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
     let mut next = gen_command(default_shell, default_argument, "playerctl next"); 
     let mut previous = gen_command(default_shell, default_argument, "playerctl previous"); 
     let mut pause_play = gen_command(default_shell, default_argument, "playerctl play-pause"); 
-    let mut volume = gen_command(default_shell, default_argument, "./scripts/volume.sh"); 
+    let mut volume_up = gen_command(default_shell, default_argument, "playerctl volume 0.1+"); 
+    let mut volume_down = gen_command(default_shell, default_argument, "playerctl volume 0.1-"); 
 
     
 
@@ -121,7 +122,8 @@ fn command(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
         &mut status_info,
         &mut music_name_info,
         &mut shuffle_info,
-        &mut volume,
+        &mut volume_up,
+        &mut volume_down,
         &mut shuffle_off,
         &mut shuffle_on,
         &mut next,
@@ -182,14 +184,11 @@ fn render_scene(canvas: &mut Canvas<Window>, shuffle_info: String, music_name_st
 
 
 //================================================SYSTEM FUNCTION============================================
-fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info: &mut Command, shuffle_info: &mut Command, volume: &mut Command, shuffle_on: &mut Command, shuffle_off: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command,  event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
+fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info: &mut Command, shuffle_info: &mut Command, volume_up: &mut Command, volume_down: &mut Command, shuffle_on: &mut Command, shuffle_off: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command,  event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
 {
 
 
 
-//================================================VOLUME SETUP============================================
-    let volume_change: f64 = 0.100000000000;
-    let mut volume_float: f64 = 1.0000000000;
 
 
 
@@ -207,15 +206,12 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
 
 
 //===========================================COMMANDS STRINGS============================================
-    let volume_string = String::from("playerctl volume ");
     let mut music_name_string = String::from("");
     let mut status_info_string = String::from("");
     let mut shuffle_string = String::from("");
     let mut volume_command_string = String::from("");
     'running: loop 
     {
-        let float_string = volume_float.to_string();
-        let volume_combined = volume_string.clone() + &float_string;
         while volume_command_string.len() >= 4 { volume_command_string.pop();}
         std::thread::sleep(Duration::from_millis(16));
 
@@ -289,25 +285,13 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
 //================================================AUDIO KEYCHECKER============================================
                 Event::KeyDown { keycode: Some(Keycode::K), .. } => 
                 {   
-                    if volume_float < 1.1
-                    {
-                        println!("{}", volume_combined);
-                        volume_float += volume_change;
-                        File::create("scripts/volume.sh").unwrap().write_all(volume_combined.as_bytes()).unwrap();
-                        volume.spawn().unwrap();
-                    }
+                        volume_up.spawn().unwrap();
                 }     
 
 
                 Event::KeyDown { keycode: Some(Keycode::J), .. } => 
                 {
-                    if volume_float > -0.1
-                    {
-                        println!("{}", volume_combined);
-                        volume_float -= volume_change;
-                        File::create("scripts/volume.sh").unwrap().write_all(volume_combined.as_bytes()).unwrap();
-                        volume.spawn().unwrap();
-                    }
+                        volume_down.spawn().unwrap();
                 }        
  
 
