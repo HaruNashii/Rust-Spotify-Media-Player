@@ -1,6 +1,5 @@
 //======================================THE CRATES============================================
-use std::fs::File;
-use std::io::{Write, Read};
+use std::io::Read;
 use std::time::{Duration, Instant};
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
