@@ -2,7 +2,6 @@
 use std::io::Read;
 use std::time::{Duration, Instant};
 use std::process::{Command, Stdio};
-use std::sync::{Arc, Mutex};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
@@ -34,8 +33,6 @@ fn font_generator<'a>(additional_text: &str, texture_creator: &'a TextureCreator
 
 
 
-
-
 fn gen_command(shell: &str, arg_one: &str, arg_two: &str) -> Command
 {
         let mut command = Command::new(shell);
@@ -43,8 +40,6 @@ fn gen_command(shell: &str, arg_one: &str, arg_two: &str) -> Command
         command.arg(arg_two);
         return command;
 }
-
-
 
 
 
@@ -60,11 +55,41 @@ fn gen_command_with_output(shell: &str, arg_one: &str, arg_two: &str) -> Command
 
 
 
+fn gen_button(x: i32, y: i32, width: i32, height: i32) -> Rect 
+{
+let rect = Rect::new(x, y, width.try_into().unwrap(), height.try_into().unwrap());
+
+return rect;
+}
+
+
 
 
 
 //================================================FONTS DATA============================================
-fn fonts(canvas: &mut Canvas<Window>, shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String)
+fn buttons() -> (Rect, Rect, Rect, Color)
+{
+    let default_button_color = Color::RGB(255, 255, 255);
+    let default_width = 300;
+    let default_height = 200;
+    let default_y = 600 / 2 - default_height / 2;
+    let middle_screen = 800 / 2 - default_width / 2;
+
+    let previous_rect = gen_button(middle_screen, default_y, default_width, default_height);
+    let pause_rect = gen_button(middle_screen / 2 - default_width, default_y, default_width, default_height);
+    let next_rect = gen_button(middle_screen + default_width, default_y, default_width, default_height);
+    
+    return (previous_rect, pause_rect, next_rect, default_button_color);
+}
+
+
+
+
+
+
+
+
+fn fonts(canvas: &mut Canvas<Window>, shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String) 
 {
 let texture_creator = canvas.texture_creator();
 let default_path = "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf";
@@ -80,11 +105,8 @@ let (music_name_text, music_name_rect) = font_generator("Name:", &texture_creato
 let (status_text, status_rect) = font_generator("Status:", &texture_creator, default_size, default_color, default_path, status_info_string, 0, 150);
 
 
-canvas.copy(&volume_text, None, volume_rect).unwrap();
-canvas.copy(&shuffle_text, None, shuffle_rect).unwrap();
-canvas.copy(&music_name_text, None, music_name_rect).unwrap();
-canvas.copy(&status_text, None, status_rect).unwrap();
-canvas.present();
+
+render_scene(canvas, volume_text, shuffle_text, music_name_text, status_text, volume_rect, shuffle_rect, music_name_rect, status_rect);
 }
 
 
@@ -92,7 +114,7 @@ canvas.present();
 
 
 //=============================THE COMMANDS DATA========================================
-fn command(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>) 
+fn commands(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>) 
 {
 //=============================THE DEFAULT CONFIG USED PER EVERY COMMAND========================================
     let default_shell: &str = "bash";
@@ -142,10 +164,8 @@ const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 600;
 fn window()
 {       
-            let sdl_inicializator_creator = Arc::new(Mutex::new(sdl2::init().unwrap())); 
-            let sdl_started = Arc::clone(&sdl_inicializator_creator);
-            let sdl_guard = sdl_started.lock().unwrap();
-            let video_system = sdl_guard.video().unwrap();
+            let sdl_started = sdl2::init().unwrap(); 
+            let video_system = sdl_started.video().unwrap();
             let window = video_system
             .window("Media", WINDOW_WIDTH, WINDOW_HEIGHT)
             .position_centered()
@@ -159,10 +179,11 @@ fn window()
             .build()
             .map_err(|e| e.to_string())
             .unwrap();
+            canvas.set_logical_size(WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
 
 
-            let mut event_pump = sdl_guard.event_pump().unwrap();
-            command(&mut event_pump, &mut canvas);
+            let mut event_pump = sdl_started.event_pump().unwrap();
+            commands(&mut event_pump, &mut canvas);
 }
  
 
@@ -170,12 +191,23 @@ fn window()
 
 
 //================================================THE WINDOW RENDER============================================
-fn render_scene(canvas: &mut Canvas<Window>, shuffle_info: String, music_name_string: String, status_info_string: String, volume_command_string: String)
+fn render_scene(canvas: &mut Canvas<Window>, volume_text: Texture, shuffle_text: Texture, music_name_text: Texture, status_text: Texture, volume_rect: Rect, shuffle_rect: Rect, music_name_rect: Rect, status_rect: Rect)
 {
             canvas.set_draw_color(Color::RGB(0, 0, 0));
             canvas.clear();
+           
+            let (previous_rect, pause_rect, next_rect, default_button_color) = buttons();
+            canvas.set_draw_color(default_button_color);
+            canvas.fill_rect(previous_rect).unwrap();
+            canvas.fill_rect(pause_rect).unwrap();
+            canvas.fill_rect(next_rect).unwrap();
 
-            fonts(canvas, shuffle_info, music_name_string, status_info_string, volume_command_string);
+            canvas.copy(&volume_text, None, volume_rect).unwrap();
+            canvas.copy(&shuffle_text, None, shuffle_rect).unwrap();
+            canvas.copy(&music_name_text, None, music_name_rect).unwrap();
+            canvas.copy(&status_text, None, status_rect).unwrap();
+
+            canvas.present();
 }
 
 
@@ -217,8 +249,7 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
 
 
 //=======================================RENDER SCENE ACTIVATOR AND STRING PASSING============================================
-        render_scene(canvas, shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
-
+        fonts(canvas, shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
 
 
 //===============================================ACTIVATOR OF THE COMMANDS IN LOOP============================================
@@ -226,7 +257,7 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
         {
             music_name_string.clear();
             music_name_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut music_name_string).unwrap();
-            music_name_string.pop();
+            music_name_string.pop() ;
     
             status_info_string.clear();
             status_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut status_info_string).unwrap();
@@ -311,13 +342,16 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
 //================================================MAIN============================================
 fn main() 
 {
-//                                                gen_command()                         font_generator
-//                                                     ^                                       ^
-//                                                     ^                                       ^ 
-//the sequal for function activation is (Window() > command() > system() > render_scene() > fonts())
-//                                                     v
-//                                                     v
-//                                           gen_command_with_output()
+//                                      //                                                  gen_button()
+//                                      //                                                      ^
+//                                      //                                                      ^
+//                                      //            gen_command()       font_generator()   buttons()
+//                                      //                 ^                      ^             ^
+//                                      //                 ^                      ^             ^
+//the sequal for function activation is //  (Window() > commands() > system() > fonts() > render_scene())
+//                                      //                 v
+//                                      //                 v
+//                                      //       gen_command_with_output()
 window();
 }
 
