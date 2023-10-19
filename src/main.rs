@@ -1,5 +1,6 @@
 //======================================THE CRATES============================================
 use std::io::Read;
+use sdl2::video::WindowContext;
 use std::time::{Duration, Instant};
 use std::process::{Command, Stdio};
 use sdl2::event::Event;
@@ -89,9 +90,13 @@ fn buttons() -> (Rect, Rect, Rect, Color)
 
 
 
-fn fonts(canvas: &mut Canvas<Window>, shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String) 
+fn fonts(shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String) 
 {
-let texture_creator = canvas.texture_creator();
+type MyFn = fn() -> (TextureCreator<WindowContext>, Canvas<Window>);
+let function_pointer: MyFn = window;
+let result = function_pointer();
+let texture_creator = result.0; 
+
 let default_path = "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf";
 let default_color = Color::RGB(255, 255, 255);
 let default_size: u16 = 25;
@@ -106,7 +111,7 @@ let (status_text, status_rect) = font_generator("Status:", &texture_creator, def
 
 
 
-render_scene(canvas, volume_text, shuffle_text, music_name_text, status_text, volume_rect, shuffle_rect, music_name_rect, status_rect);
+render_scene(volume_text, shuffle_text, music_name_text, status_text, volume_rect, shuffle_rect, music_name_rect, status_rect);
 }
 
 
@@ -114,9 +119,10 @@ render_scene(canvas, volume_text, shuffle_text, music_name_text, status_text, vo
 
 
 //=============================THE COMMANDS DATA========================================
-fn commands(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>) 
+fn commands(mut event_pump: &mut EventPump) 
 {
 //=============================THE DEFAULT CONFIG USED PER EVERY COMMAND========================================
+
     let default_shell: &str = "bash";
     let default_argument: &str = "-c"; 
 
@@ -151,7 +157,6 @@ fn commands(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
         &mut previous,
         &mut pause_play,
         &mut event_pump,
-        canvas,
     );
 
 }
@@ -162,7 +167,7 @@ fn commands(mut event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
 //======================================THE WINDOW DATA AND INICIALIZATOR============================================
 const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 600;
-fn window()
+fn window() -> (TextureCreator<WindowContext>, Canvas<Window>)
 {       
             let sdl_started = sdl2::init().unwrap(); 
             let video_system = sdl_started.video().unwrap();
@@ -181,9 +186,12 @@ fn window()
             .unwrap();
             canvas.set_logical_size(WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
 
+            let texture_creator = canvas.texture_creator();
 
             let mut event_pump = sdl_started.event_pump().unwrap();
-            commands(&mut event_pump, &mut canvas);
+            commands(&mut event_pump);
+
+            return (texture_creator, canvas);
 }
  
 
@@ -191,8 +199,13 @@ fn window()
 
 
 //================================================THE WINDOW RENDER============================================
-fn render_scene(canvas: &mut Canvas<Window>, volume_text: Texture, shuffle_text: Texture, music_name_text: Texture, status_text: Texture, volume_rect: Rect, shuffle_rect: Rect, music_name_rect: Rect, status_rect: Rect)
+fn render_scene(volume_text: Texture, shuffle_text: Texture, music_name_text: Texture, status_text: Texture, volume_rect: Rect, shuffle_rect: Rect, music_name_rect: Rect, status_rect: Rect)
 {
+            type MyFn = fn() -> (TextureCreator<WindowContext>, Canvas<Window>);
+            let function_pointer: MyFn = window;
+            let result = function_pointer();
+            let mut canvas = result.1;
+
             canvas.set_draw_color(Color::RGB(0, 0, 0));
             canvas.clear();
            
@@ -215,7 +228,7 @@ fn render_scene(canvas: &mut Canvas<Window>, volume_text: Texture, shuffle_text:
 
 
 //================================================SYSTEM FUNCTION============================================
-fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info: &mut Command, shuffle_info: &mut Command, volume_up: &mut Command, volume_down: &mut Command, shuffle_on: &mut Command, shuffle_off: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command,  event_pump: &mut EventPump, canvas: &mut Canvas<Window>)
+fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info: &mut Command, shuffle_info: &mut Command, volume_up: &mut Command, volume_down: &mut Command, shuffle_on: &mut Command, shuffle_off: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command, event_pump: &mut EventPump)
 {
 
 
@@ -241,6 +254,13 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
     let mut status_info_string = String::from("");
     let mut shuffle_string = String::from("");
     let mut volume_command_string = String::from("");
+    
+
+
+
+
+
+
     'running: loop 
     {
         while volume_command_string.len() >= 4 { volume_command_string.pop();}
@@ -249,8 +269,8 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
 
 
 //=======================================RENDER SCENE ACTIVATOR AND STRING PASSING============================================
-        fonts(canvas, shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
-
+        fonts(shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
+        
 
 //===============================================ACTIVATOR OF THE COMMANDS IN LOOP============================================
         if display_timer.elapsed() >= display_timer_duration && display_timer_activator
@@ -259,6 +279,7 @@ fn system(volume_info: &mut Command, status_info: &mut Command, music_name_info:
             music_name_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut music_name_string).unwrap();
             music_name_string.pop() ;
     
+
             status_info_string.clear();
             status_info.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut status_info_string).unwrap();
             status_info_string.pop();
@@ -352,6 +373,19 @@ fn main()
 //                                      //                 v
 //                                      //                 v
 //                                      //       gen_command_with_output()
+
+
+
+//                   //                                                  gen_button()
+//                   //                                                      ^
+//                   //                                                      ^
+//                   //            gen_command()       font_generator()   buttons()
+//                   //                 ^                      ^             ^
+//                   //                 ^                      ^             ^
+//the data struct is //  (Window() > commands() > system() > fonts() > render_scene())
+//                   //                 v
+//                   //                 v
+//                   //       gen_command_with_output()
 window();
 }
 
