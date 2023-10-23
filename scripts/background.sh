@@ -3,24 +3,34 @@
 
 link=`playerctl metadata mpris:artUrl`
 link_without_https="${link:24}"
+
+holder_name="holder.jpg"
+blur_name="blur.png"
 format=".png"
 path="$PWD/.pictures/"
-final_string="${path}${link_without_https}"
-final_string_with_format="${path}${link_without_https}${format}"
+
+background_without_format="${path}${link_without_https}"
+background_with_format="${background_without_format}${format}"
+blur_image="${path}${blur_name}"
+holder_image="${path}${holder_name}"
 
 # download the picture with wget + spotify api album link
-if [ -e "$final_string_with_format" ]; then 
-  echo "Picture Already Exist. Skipping..."
-else 
+if [ -e "$background_with_format" ]; then 
+  clear
+else
   wget --quiet -P "$path" "$link"
 fi
 
 # add ".png" on the end of the downloaded picture
-if [ -e "$final_string" ]; then
-mv "$final_string" "$final_string_with_format"
+if [ -e "$background_without_format" ]; then
+    if [ -e "$background_with_format" ]; then
+      clear
+    else 
+      mv "$background_without_format" "$background_with_format"
+    fi
 fi
 
 # delete every picture that is not of the current playing music
-if [ -e "$final_string_with_format" ]; then
-find "$path" -type f ! -wholename "$final_string_with_format" -exec rm {} \;
+if [ -e "$background_with_format" ]; then
+find "$path" -type f ! -wholename "$background_with_format" ! -wholename "$holder_image" ! -wholename "$blur_image" -exec rm {} \;
 fi

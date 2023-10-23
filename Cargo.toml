@@ -3,8 +3,6 @@ name = "media"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-
 [dependencies.sdl2]
 git = "https://github.com/rust-sdl2/rust-sdl2"
 features=["ttf", "image"]

@@ -84,33 +84,45 @@ return rect;
 //=====================================================================================//
 //----------------------------THE BACKGROUNDS DATA-------------------------------------//
 //=====================================================================================//
-fn download_image() -> Command
+fn download_image() 
 {
     let mut download_image = Command::new("bash");
     download_image.arg("./scripts/background.sh");
+    download_image.spawn().unwrap();
 
-    return download_image;
 }
 
 
-fn background<'a>(get_background: &'a mut Command,texture_creator: &'a TextureCreator<WindowContext>) -> Texture<'a>
+fn background<'a>(get_background: &'a mut Command,texture_creator: &'a TextureCreator<WindowContext>) -> (Texture<'a>, Texture<'a>, Texture<'a>, Rect)
 {
-    let mut download_image = download_image();
-    download_image.spawn().unwrap();
+    download_image();
 
     let mut background_url = String::new();
     background_url.clear();
+
     get_background.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut background_url).unwrap();    
     let str: &str = &background_url;
-    let string_without_line_breaks = str.replace("\n", "");
+    let image_name = str.replace("\n", "");
+    while image_name == String::from("$PWD/.pictures/holder.png")
+    {
+    get_background.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut background_url).unwrap();    
+    };
 
-    std::thread::sleep(Duration::from_millis(1000));
+    let album_picture_rect = Rect::new(60, 400, 350, 350);
 
-    let image1 = texture_creator
-    .load_texture(string_without_line_breaks)
+    let background = texture_creator
+    .load_texture(&image_name)
     .unwrap();
 
-    return image1;
+    let album_picture = texture_creator
+    .load_texture(&image_name)
+    .unwrap();
+
+    let blur = texture_creator
+    .load_texture(".pictures/blur.png")
+    .unwrap();
+
+    return (background, album_picture, blur, album_picture_rect);
 }
 
 
@@ -118,22 +130,28 @@ fn background<'a>(get_background: &'a mut Command,texture_creator: &'a TextureCr
 //=====================================================================================//
 //------------------------------THE BUTTONS DATA---------------------------------------//
 //=====================================================================================//
-fn buttons() -> (Rect, Rect, Rect, Color, i32, i32)
+fn buttons() -> (Rect, Rect, Rect, Rect, Color, i32, i32, i32, i32)
 {
     let default_button_color = Color::RGB(255, 255, 255);
-    let default_width = 50;
-    let default_height = 50;
-    let middle_screen_x = 800 / 2 - default_width / 2;
-    let middle_screen_y = 600 / 2 - default_height / 2;
+    let default_width = 100;
+    let default_height = 100;
+    let small_width = 50;
+    let small_height = 50;
+    let middle_screen_x_default = WINDOW_WIDTH_I32 / 2 - default_width / 2;
+    let middle_screen_y_default = WINDOW_HEIGHT_I32 / 2 - default_height / 2;
+    let middle_screen_x_small = WINDOW_WIDTH_I32 / 2 - small_width / 2;
+    let middle_screen_y_small = WINDOW_HEIGHT_I32 / 2 - small_height / 2;
 
-    let default_y = middle_screen_y + 200;
-    let padding = 50;
+    let default_y = middle_screen_y_default + 450;
+    let small_y = middle_screen_y_small + 450;
+    let padding = 200;
 
-    let previous_rect = gen_button(middle_screen_x - default_width - padding, default_y, default_width, default_height);
-    let pause_rect = gen_button(middle_screen_x, default_y, default_width, default_height);
-    let next_rect = gen_button(middle_screen_x + default_width + padding, default_y, default_width, default_height);
-    
-    return (previous_rect, pause_rect, next_rect, default_button_color, default_width, default_height);
+    let shuffle_button_rect = gen_button(middle_screen_x_small - padding*2 + 25, small_y, small_width, small_height);
+    let previous_rect = gen_button(middle_screen_x_default - padding, default_y, default_width, default_height);
+    let pause_rect = gen_button(middle_screen_x_default, default_y, default_width, default_height);
+    let next_rect = gen_button(middle_screen_x_default + padding, default_y, default_width, default_height);
+
+    return (previous_rect, pause_rect, next_rect, shuffle_button_rect, default_button_color, default_width, default_height, small_width, small_height);
 }
 
 
@@ -141,23 +159,23 @@ fn buttons() -> (Rect, Rect, Rect, Color, i32, i32)
 //=====================================================================================//
 //-------------------------------THE FONTS DATA----------------------------------------//
 //=====================================================================================//
-fn fonts(image1: Texture, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String) 
+fn fonts(shuffle_bool: bool, background: Texture, album_picture: Texture, blur: Texture, album_picture_rect: Rect, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, shuffle_string: String, music_name_string: String, status_info_string: String, volume_command_string: String) 
 {
 let default_path = "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf";
 let default_color = Color::RGB(255, 255, 255);
 let default_size: u16 = 25;
 
-let volume_rect_pos = [0, 0];
-let shuffle_rect_pos = [0, 50];
-let music_name_rect_pos = [275, 100];
+let volume_rect_pos = [1360, 970];
+let shuffle_rect_pos = [550, 970];
+let music_name_rect_pos = [450, 500];
 let status_rect_pos = [0, 150];
 
 let (volume_text, volume_rect) = font_generator("Volume:", &texture_creator, default_size, default_color, default_path, volume_command_string, volume_rect_pos[0], volume_rect_pos[1]);
-let (shuffle_text, shuffle_rect) = font_generator("Shuffle:", &texture_creator, default_size, default_color, default_path, shuffle_string, shuffle_rect_pos[0], shuffle_rect_pos[1]);
+let (shuffle_text, shuffle_rect) = font_generator(" ", &texture_creator, default_size, default_color, default_path, shuffle_string, shuffle_rect_pos[0], shuffle_rect_pos[1]);
 let (music_name_text, music_name_rect) = font_generator(" ", &texture_creator, default_size, default_color, default_path, music_name_string, music_name_rect_pos[0], music_name_rect_pos[1]);
 let (status_text, status_rect) = font_generator("Status:", &texture_creator, default_size, default_color, default_path, status_info_string, status_rect_pos[0], status_rect_pos[1]);
 
-render_scene(image1, canvas, volume_text, shuffle_text, music_name_text, status_text, volume_rect, shuffle_rect, music_name_rect, status_rect);
+render_scene(shuffle_bool, background, album_picture, blur, album_picture_rect, canvas, volume_text, shuffle_text, music_name_text, status_text, volume_rect, shuffle_rect, music_name_rect, status_rect);
 }
 
 
@@ -222,8 +240,10 @@ fn commands(canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<Window
 //=====================================================================================//
 //---------------------------THE WINDOW DATA AND INICIALIZATOR-------------------------//
 //=====================================================================================//
-const WINDOW_WIDTH: u32 = 800;
-const WINDOW_HEIGHT: u32 = 600;
+const WINDOW_WIDTH: u32 = 1920;
+const WINDOW_HEIGHT: u32 = 1080;
+const WINDOW_WIDTH_I32: i32 = 1920;
+const WINDOW_HEIGHT_I32: i32 = 1080;
 fn window()
 {       
     let sdl_started = sdl2::init().unwrap(); 
@@ -254,24 +274,36 @@ fn window()
 //=====================================================================================//
 //---------------------------------THE WINDOW RENDER-----------------------------------//
 //=====================================================================================//
-fn render_scene(image1: Texture, canvas: &mut Canvas<Window>, volume_text: Texture, shuffle_text: Texture, music_name_text: Texture, status_text: Texture, volume_rect: Rect, shuffle_rect: Rect, music_name_rect: Rect, status_rect: Rect)
+fn render_scene(shuffle_bool: bool, background: Texture, album_picture: Texture, blur: Texture, album_picture_rect: Rect, canvas: &mut Canvas<Window>, volume_text: Texture, shuffle_text: Texture, music_name_text: Texture, status_text: Texture, volume_rect: Rect, shuffle_rect: Rect, music_name_rect: Rect, status_rect: Rect)
 {
-    let (previous_rect, pause_rect, next_rect, default_button_color, _, _) = buttons();
+    let (previous_rect, pause_rect, next_rect, shuffle_button_rect, default_button_color, _, _, _, _) = buttons();
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
     
-    canvas.copy(&image1, None, None).unwrap();
-    canvas.copy(&volume_text, None, volume_rect).unwrap();
-    canvas.copy(&shuffle_text, None, shuffle_rect).unwrap();
-    canvas.copy(&music_name_text, None, music_name_rect).unwrap();
-    canvas.copy(&status_text, None, status_rect).unwrap();
+    canvas.copy(&background, None, None).unwrap();
+    canvas.copy(&blur, None, None).unwrap();
+    canvas.copy(&album_picture, None, album_picture_rect).unwrap();
     
+    if shuffle_bool == true 
+    {
+        canvas.set_draw_color(Color::RGB(0, 255, 0));
+        canvas.fill_rect(shuffle_button_rect).unwrap();
+    }
+    if shuffle_bool == false
+    {
+        canvas.set_draw_color(Color::RGB(175, 175, 175));
+        canvas.fill_rect(shuffle_button_rect).unwrap();
+    }
     canvas.set_draw_color(default_button_color);
     canvas.fill_rect(previous_rect).unwrap();
     canvas.fill_rect(pause_rect).unwrap();
     canvas.fill_rect(next_rect).unwrap();
 
+    canvas.copy(&volume_text, None, volume_rect).unwrap();
+    canvas.copy(&shuffle_text, None, shuffle_rect).unwrap();
+    canvas.copy(&music_name_text, None, music_name_rect).unwrap();
+    canvas.copy(&status_text, None, status_rect).unwrap();
     canvas.present();
 }
 
@@ -283,7 +315,7 @@ fn render_scene(image1: Texture, canvas: &mut Canvas<Window>, volume_text: Textu
 //=====================================================================================//
 fn system(get_background: &mut Command, volume_info: &mut Command, status_info: &mut Command, music_name_info: &mut Command, shuffle_info: &mut Command, volume_up: &mut Command, volume_down: &mut Command, shuffle_off: &mut Command, shuffle_on: &mut Command, next: &mut Command, previous: &mut Command, pause: &mut Command, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, sdl_started: sdl2::Sdl)
 {
-    let (previous_rect, pause_rect, next_rect, _default_button_color, buttonsizex, buttonsizey) = buttons();
+    let (previous_rect, pause_rect, next_rect, shuffle_button_rect, _default_button_color, buttonsizex, buttonsizey, buttonsize_smallx, buttonsize_smally) = buttons();
 
 
 //===================================TIMER SETUP FOR DISPLAY INFO AND FOR THE KEYCHECKER=======================================
@@ -304,6 +336,7 @@ fn system(get_background: &mut Command, volume_info: &mut Command, status_info: 
     let mut status_info_string = String::from("");
     let mut shuffle_string = String::from("");
     let mut volume_command_string = String::from("");
+    let mut shuffle_bool = false;
     
 
 
@@ -312,15 +345,15 @@ fn system(get_background: &mut Command, volume_info: &mut Command, status_info: 
     'running: loop 
     {
         while volume_command_string.len() >= 4 { volume_command_string.pop(); }
+        if shuffle_string == String::from("On") { shuffle_bool = true; };
+        if shuffle_string == String::from("Off") { shuffle_bool = false; };
         std::thread::sleep(Duration::from_millis(16));
 
 
+
 //=======================================RENDER SCENE ACTIVATOR AND STRING PASSING============================================
-
-        let image1 = background(get_background, texture_creator);
-
-        
-        fonts(image1, canvas, texture_creator, shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
+        let (background, album_picture, blur, album_picture_rect) = background(get_background, texture_creator);
+        fonts(shuffle_bool, background, album_picture, blur, album_picture_rect, canvas, texture_creator, shuffle_string.clone(), music_name_string.clone(), status_info_string.clone(), volume_command_string.clone());
         
 
 //===============================================ACTIVATOR OF THE COMMANDS IN LOOP============================================
@@ -368,6 +401,28 @@ fn system(get_background: &mut Command, volume_info: &mut Command, status_info: 
                     if x >= previous_rect.x && x <= previous_rect.x + buttonsizex && y >= previous_rect.y && y <= previous_rect.y + buttonsizey as i32
                     {
                         previous.spawn().unwrap();
+                    }
+
+                    if x >= shuffle_button_rect.x && x <= shuffle_button_rect.x + buttonsize_smallx && y >= shuffle_button_rect.y && y <= shuffle_button_rect.y + buttonsize_smally as i32
+                    {
+                        if keychecker_timer_1.elapsed() > keychecker_timer_duration_1 && !keychecker_timer_activator
+                        {   
+                            shuffle_on.spawn().unwrap();
+    
+                            keychecker_timer_activator = true;
+                            keychecker_timer_1 = Instant::now();
+                            keychecker_timer_2 = Instant::now();
+                        }
+    
+    
+                        if keychecker_timer_2.elapsed() > keychecker_timer_duration_2 && keychecker_timer_activator
+                        {
+                            shuffle_off.spawn().unwrap();
+      
+                            keychecker_timer_activator = false;
+                            keychecker_timer_1 = Instant::now();
+                            keychecker_timer_2 = Instant::now();
+                        }
                     }
                 }
 
@@ -434,9 +489,13 @@ fn system(get_background: &mut Command, volume_info: &mut Command, status_info: 
                 sdl2::event::Event::KeyDown { keycode: Some(sdl2::keyboard::Keycode::Escape), .. } => { break 'running; }
                 _=> {}
             }
+
         }
     }
 }
+
+
+
 
 
 
