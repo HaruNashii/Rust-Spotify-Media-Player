@@ -3,7 +3,7 @@
 link=`playerctl metadata mpris:artUrl`
 link_without_https="${link:24}"
 
-path="$PWD/.pictures/"
+path="$PWD/.background/"
 format=".png"
 holder_image="holder.jpg"
 
