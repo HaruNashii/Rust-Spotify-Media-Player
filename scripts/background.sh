@@ -14,6 +14,7 @@ background_with_format="${background_without_format}${format}"
 blur_image="${path}${blur_name}"
 holder_image="${path}${holder_name}"
 
+
 # download the picture with wget + spotify api album link
 if ! [ -e "$background_with_format" ]; then 
   wget --quiet -P "$path" "$link"
@@ -28,5 +29,5 @@ fi
 
 # delete every picture that is not of the current playing music
 if [ -e "$background_with_format" ]; then
-find "$path" -type f ! -wholename "$background_with_format" ! -wholename "$holder_image" ! -wholename "$blur_image" -exec rm {} \;
+  find "$path" -type f ! -wholename "$background_with_format" ! -wholename "$holder_image" ! -wholename "$blur_image" -exec rm {} \;
 fi

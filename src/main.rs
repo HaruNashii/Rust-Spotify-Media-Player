@@ -152,16 +152,19 @@ fn progress_bar<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_time
 {
     music_time_string.clear();
     get_time.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut music_time_string).unwrap();
-    let mut remove1 = music_time_string.replace(":", "");
-    remove1.pop();
-    let music_total_time: i32 = remove1.parse().unwrap();
-    let music_total_time_u32: u32 = remove1.parse().unwrap();
+    let mut remove_1 = music_time_string.replace(":", "");
+    remove_1.pop();
+    if remove_1.len() <= 1 { remove_1.push_str("0"); };
+    let music_total_time_u32: u32 = remove_1.parse().unwrap();
+
 
     music_current_time_string.clear();
     get_current_time.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut music_current_time_string).unwrap();
-    let mut remove_1 = music_current_time_string.replace(":", "");
-    remove_1.pop();
-    let music_current_time: i32 = remove_1.parse().unwrap();
+    let mut remove_2 = music_current_time_string.replace(":", "");
+    remove_2.pop();
+    if remove_2.len() <= 1 { remove_2.push_str("0"); };
+    let music_current_time: i32 = remove_2.parse().unwrap();
+
 
 
     music_time_remaining_string.clear();
@@ -171,7 +174,7 @@ fn progress_bar<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_time
 
     let u32_value: u32 = 40;
     let (time_remaining_texture, time_remaining_rect) = font_generator(" ", &texture_creator, 15, Color::RGB(255, 255, 255), "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf", music_time_remaining_string, (music_total_time_u32 + u32_value).try_into().unwrap(), 450);
-    let progress_bar_background = Rect::new(40, 450, music_total_time.try_into().unwrap(), 20);
+    let progress_bar_background = Rect::new(40, 450, music_total_time_u32, 20);
     let progress_rect = Rect::new(40, 450, music_current_time.try_into().unwrap(), 20);
 
 

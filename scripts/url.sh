@@ -1,6 +1,6 @@
 #!/bin/bash
 
-link=`playerctl metadata mpris:artUrl`
+link=`playerctl -s metadata mpris:artUrl`
 link_without_https="${link:24}"
 
 path="$PWD/.background/"
