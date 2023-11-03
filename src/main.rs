@@ -293,23 +293,23 @@ fn commands(canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<Window
 
 
 //================================================COMMANDS============================================
-    let mut volume_info = gen_command_with_output(default_shell, default_argument, "playerctl volume");
-    let mut status_info = gen_command_with_output(default_shell, default_argument, "playerctl status");
-    let mut music_name_info = gen_command_with_output(default_shell, default_argument, "playerctl metadata xesam:title");
-    let mut shuffle_info = gen_command_with_output(default_shell, default_argument, "playerctl shuffle");
-    let mut shuffle_on = gen_command(default_shell, default_argument, "playerctl shuffle on"); 
-    let mut shuffle_off = gen_command(default_shell, default_argument, "playerctl shuffle off"); 
-    let mut next = gen_command(default_shell, default_argument, "playerctl next"); 
-    let mut previous = gen_command(default_shell, default_argument, "playerctl previous"); 
-    let mut pause_play = gen_command(default_shell, default_argument, "playerctl play-pause"); 
-    let mut volume_up = gen_command(default_shell, default_argument, "playerctl volume 0.1+"); 
-    let mut volume_down = gen_command(default_shell, default_argument, "playerctl volume 0.1-"); 
+    let mut volume_info = gen_command_with_output(default_shell, default_argument, "playerctl -s volume");
+    let mut status_info = gen_command_with_output(default_shell, default_argument, "playerctl -s status");
+    let mut music_name_info = gen_command_with_output(default_shell, default_argument, "playerctl -s metadata xesam:title");
+    let mut shuffle_info = gen_command_with_output(default_shell, default_argument, "playerctl -s shuffle");
+    let mut shuffle_on = gen_command(default_shell, default_argument, "playerctl -s shuffle on"); 
+    let mut shuffle_off = gen_command(default_shell, default_argument, "playerctl -s shuffle off"); 
+    let mut next = gen_command(default_shell, default_argument, "playerctl -s next"); 
+    let mut previous = gen_command(default_shell, default_argument, "playerctl -s previous"); 
+    let mut pause_play = gen_command(default_shell, default_argument, "playerctl -s play-pause"); 
+    let mut volume_up = gen_command(default_shell, default_argument, "playerctl -s volume 0.1+"); 
+    let mut volume_down = gen_command(default_shell, default_argument, "playerctl =s volume 0.1-"); 
     let mut get_background = gen_command_with_output(default_shell, default_argument, "./scripts/url.sh");
-    let mut get_time = gen_command_with_output(default_shell, default_argument, "playerctl metadata playerctl metadata --format '{{ duration(mpris:length) }}'");
-    let mut get_current_time = gen_command_with_output(default_shell, default_argument, "playerctl position --format '{{ duration(position)}}'");
-    let mut get_time_remaining = gen_command_with_output(default_shell, default_argument, "playerctl metadata --format '{{ duration(mpris:length - position) }}'");
-    let mut music_artist_info = gen_command_with_output(default_shell, default_argument, "playerctl metadata --format '{{ artist }}'");
-    let mut music_album_info = gen_command_with_output(default_shell, default_argument, "playerctl metadata --format '{{ album }}'");
+    let mut get_time = gen_command_with_output(default_shell, default_argument, "playerctl -s metadata playerctl metadata --format '{{ duration(mpris:length) }}'");
+    let mut get_current_time = gen_command_with_output(default_shell, default_argument, "playerctl -s position --format '{{ duration(position)}}'");
+    let mut get_time_remaining = gen_command_with_output(default_shell, default_argument, "playerctl -s metadata --format '{{ duration(mpris:length - position) }}'");
+    let mut music_artist_info = gen_command_with_output(default_shell, default_argument, "playerctl -s metadata --format '{{ artist }}'");
+    let mut music_album_info = gen_command_with_output(default_shell, default_argument, "playerctl -s metadata --format '{{ album }}'");
 
 
 
