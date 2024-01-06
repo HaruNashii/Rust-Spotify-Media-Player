@@ -17,6 +17,7 @@ use sdl2::rect::Rect;
 use sdl2::render::TextureCreator;
 use sdl2::image::LoadTexture;
 use std::path::Path;
+use std::fs;
 
 
 
@@ -260,12 +261,72 @@ fn get_percentage(x: u32, y: u32) -> f32
 //-------------------------------------------------------------------------------------//
 //----------------------------------BACKGROUND-----------------------------------------//
 //-------------------------------------------------------------------------------------//
-fn get_background_info(get_background_path: &mut Command) -> String
+fn download_image(get_background_link: &mut Command)
 {
+    let folder_path = String::from(".background/");
 
+    //command
+    let mut background_link = String::new();
+    get_background_link.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut background_link).unwrap();
+    let raw_string_command_to_download_the_file = format!("{} {} {} {}", "wget --quiet -P", "$PWD/.background/", background_link, "&& exit");
+    let string_command_to_download_the_file = &raw_string_command_to_download_the_file.replace("\n", "");
+    let mut download_image_command = gen_command("bash", "-c", &string_command_to_download_the_file);
+
+
+    let raw_background_link_without_https_and_format = background_link.replace("https://i.scdn.co/image/", "");
+    let background_link_without_https_and_format = raw_background_link_without_https_and_format.replace("\n", "");
+
+    let raw_background_link_without_https_with_format = format!("{}{}", background_link_without_https_and_format,".png");
+    let background_link_without_https_with_format = raw_background_link_without_https_with_format.replace("\n", "");
+
+
+    let raw_image_path_without_format = format!("{}{}", folder_path, background_link_without_https_and_format);
+    let image_path_without_format = raw_image_path_without_format.replace("\n", "");
+    
+    let raw_image_path_with_format = format!("{}{}", folder_path, background_link_without_https_with_format);
+    let image_path_with_format = raw_image_path_with_format.replace("\n", "");
+
+
+    let folder_to_check_with_the_file = Path::new(&folder_path).join(background_link_without_https_and_format.clone());
+    let folder_to_check_with_the_file_2 = Path::new(&folder_path).join(background_link_without_https_with_format.clone());
+    if folder_to_check_with_the_file.exists() 
+    {
+           fs::rename(image_path_without_format, image_path_with_format.clone()).unwrap();
+           
+           let items = fs::read_dir(&folder_path).unwrap();
+           for entry in items 
+           {
+               let entry = entry.unwrap();
+               let entry_path = entry.path();
+               
+               if entry_path.file_name() == Some(std::ffi::OsStr::new(&background_link_without_https_with_format)) 
+               {
+                   continue; 
+               }
+
+               if entry_path.is_file() 
+               {
+                   fs::remove_file(&entry_path).unwrap();
+               } 
+           }
+
+    }
+    else 
+    {
+            if !folder_to_check_with_the_file_2.exists() 
+            {
+                download_image_command.spawn().unwrap();
+            }
+    }
+}
+
+
+
+fn get_background_info(get_background_link: &mut Command) -> String
+{
     let mut string = String::new();
     if string.len() > 1 { string.clear(); };
-    get_background_path.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut string).unwrap();   
+    get_background_link.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut string).unwrap();   
     
     if string.len() >= 24 {  string = (&string[24..]).to_string(); };
 
@@ -276,7 +337,7 @@ fn get_background_info(get_background_path: &mut Command) -> String
     let path_to_check = format!("{}{}{}", ".background/", image_name_str, ".png");
     if Path::new(&path_to_check).exists() 
     {
-        image_name = path_to_check;
+        image_name = path_to_check.clone();
     }
     else 
     {
@@ -438,7 +499,7 @@ fn volume_bar(volume_command_string: String) -> (Rect, Rect)
 //=====================================================================================//
 fn progress_bar() -> (Rect, Rect, String)
 {
-    let (_, _, _, _, _, _, _, _, _, _, _, mut get_time, mut get_current_time, mut get_time_remaining, _, _, _, _) = commands();
+    let (_, _, _, _, _, _, _, _, _, _, _, mut get_time, mut get_current_time, mut get_time_remaining, _, _, _,) = commands();
 
     let music_total_time_u32 = extract_string_of_command_and_convert_to_u32(&mut get_time);
     let music_current_time_u32 = extract_string_of_command_and_convert_to_u32(&mut get_current_time);
@@ -457,10 +518,10 @@ fn progress_bar() -> (Rect, Rect, String)
 //=====================================================================================//
 //----------------------------------THE BACKGROUNDS DATA-------------------------------//
 //=====================================================================================//
-fn song_picture<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_background_path: &mut Command, download_image: &mut Command) -> (Texture<'a>, Texture<'a>, Texture<'a>, Rect)
+fn song_picture<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_background_link: &mut Command) -> (Texture<'a>, Texture<'a>, Texture<'a>, Rect)
 {
-    download_image.spawn().unwrap();
-    let image_name = get_background_info(get_background_path);
+    let image_name = get_background_info(get_background_link);
+    download_image(get_background_link);
 
     let album_picture_rect = Rect::new(MINI_ALBUM_PICTURE_POSITION[0], MINI_ALBUM_PICTURE_POSITION[1], MINI_ALBUM_PICTURE_SIZE[0], MINI_ALBUM_PICTURE_SIZE[1]);
 
@@ -515,7 +576,7 @@ return (music_artist_text, music_artist_rect, music_album_text, music_album_rect
 //=====================================================================================//
 //-----------------------------THE COMMANDS DATA---------------------------------------//
 //=====================================================================================//
-fn commands() -> (Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command)
+fn commands() -> (Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command, Command)
 {
     let default_shell: &str = "bash";
     let default_argument: &str = "-c"; 
@@ -536,8 +597,7 @@ fn commands() -> (Command, Command, Command, Command, Command, Command, Command,
     let get_time_remaining = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata --format '{{ duration(mpris:length - position) }}' && exit");
     let music_artist_info = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata --format '{{ artist }}' && exit");
     let music_album_info = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata --format '{{ album }}' && exit");
-    let get_background_path = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata mpris:artUrl && exit");
-    let download_image = gen_command("sh", default_argument, "./scripts/background.sh && exit");
+    let get_background_link = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata mpris:artUrl && exit");
 
     return(
             volume_info,
@@ -556,8 +616,7 @@ fn commands() -> (Command, Command, Command, Command, Command, Command, Command,
             get_time_remaining,
             music_artist_info,
             music_album_info, 
-            get_background_path,
-            download_image
+            get_background_link,
             );
 }
 
@@ -642,7 +701,6 @@ fn render_scene(music_progress_bar_background: Rect, music_progress_bar_rect: Re
     // media buttons
     canvas.copy(next_image, None, next_rect).unwrap();
     canvas.copy(previous_image, None, previous_rect).unwrap();
-    canvas.set_draw_color(Color::RGB(255, 0, 0));
     if audio_is_muted { canvas.copy(muted_audio_image, None, volume_rect).unwrap(); }
     if audio_is_low { canvas.copy(low_audio_image, None, volume_rect).unwrap(); }
     if audio_is_medium { canvas.copy(medium_audio_image, None, volume_rect).unwrap(); }
@@ -683,7 +741,7 @@ fn system()
             //window
             let (mut canvas, texture_creator, sdl_started) = window();
             //commands
-            let (mut volume_info, mut status_info, mut music_name_info, mut shuffle_info, mut shuffle_on, mut shuffle_off, mut next, mut previous, mut pause_play, mut volume_up, mut volume_down, _, _, _, mut music_artist_info, mut music_album_info, mut get_background_path, mut download_image) = commands();
+            let (mut volume_info, mut status_info, mut music_name_info, mut shuffle_info, mut shuffle_on, mut shuffle_off, mut next, mut previous, mut pause_play, mut volume_up, mut volume_down, _, _, _, mut music_artist_info, mut music_album_info, mut get_background_link) = commands();
             //buttons
             let (previous_rect, pause_rect, next_rect, shuffle_button_rect) = buttons();
             //basic ui
@@ -691,7 +749,7 @@ fn system()
 
 //===========================================THE LOOP START================================================
 let mut event_pump = sdl_started.event_pump().unwrap(); 'running: loop { std::thread::sleep(Duration::from_millis(32)); 
-
+            
             //get music name
             let music_name_string = check_music_name(&mut music_name_info);
             //get music artist
@@ -709,7 +767,7 @@ let mut event_pump = sdl_started.event_pump().unwrap(); 'running: loop { std::th
             //progress bar
             let (music_progress_bar_background_rect, music_progress_bar_rect, music_time_remaining_string) = progress_bar();
             //background and album picture
-            let (background, album_picture, effect, album_picture_rect) = song_picture(&texture_creator, &mut get_background_path, &mut download_image);
+            let (background, album_picture, effect, album_picture_rect) = song_picture(&texture_creator, &mut get_background_link);
             //fonts
             let (music_artist_text, music_artist_rect, music_album_text, music_album_rect, time_remaining_text, time_remaining_rect, volume_integer_text, volume_integer_rect, music_name_text, music_name_rect) = fonts(volume_command_string.clone(), music_time_remaining_string, music_artist_string.clone(), music_album_string.clone(), &texture_creator, music_name_string.clone(),);
             //render
