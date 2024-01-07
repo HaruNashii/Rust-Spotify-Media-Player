@@ -13,7 +13,7 @@ use sdl2::mouse::MouseButton;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, Texture};
 use sdl2::video::Window;
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 use sdl2::render::TextureCreator;
 use sdl2::image::LoadTexture;
 use std::path::Path;
@@ -44,15 +44,28 @@ const WINDOW_HEIGHT: u32 = 600;
 
 
 //====================================//
+//==========(THEME OPTIONS)===========//
+//====================================//
+const USE_IMAGE_FOR_SHUFFLE_INDICATOR: bool = true;
+const USE_IMAGE_FOR_VOLUME_INDICATOR: bool = true;
+const WHITE_THEME_FOR_ICONS: bool = false;
+
+
+
+//====================================//
 //========(ELEMENTS POSITION)=========//
 //====================================//
-// the background album image have the position based on the screen size (that's why it's not here)
+// the background image have the position based on the screen size (that's why it's not here)
 
 // volume bar
 const VOLUME_TEXT_POSITION: [i32;2] = [525, 535];
 const VOLUME_BAR_BACKGROUND_POSITION: [i32;2] = [560, 543];
 const VOLUME_LEVEL_BAR_POSITION: [i32;2] = [560, 543];
-
+const DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_POSITION: [i32;2] = [527, 542];
+const DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_POSITION: [i32;2] = [543, 542];
+const DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_POSITION: [i32;2] = [542, 540];
+const DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_POSITION: [i32;2] = [542, 538];
+const DEFAULT_VOLUME_BAR_PADDING: i32 = 4;
 // progress bar
 const PROGRESS_BAR_BACKGROUND_POSITION: [i32;2] = [30, 450];
 const PROGRESS_BAR_POSITION: [i32;2] = [30, 450];
@@ -66,19 +79,20 @@ const DEFAULT_BUTTON_MEDIA_POSITION: [i32;2] = [375, 525];
 const SMALL_BUTTON_MEDIA_POSITION: [i32;2] = [283, 533];
 const DEFAULT_BUTTON_PADDING: i32 = 75;
 const SMALL_BUTTON_PADDING: i32 = 45;
+const SHUFFLE_INDICATOR_POSITION: [i32;2] = [289, 548];
 
 // fonts
-const VOLUME_INTEGER_FONT_POSITION: [i32;2] = [600, 532];
-const MUSIC_NAME_FONT_POSITION: [i32;2] = [250, 240];
-const MUSIC_ARTIST_NAME_FONT_POSITION: [i32;2] = [255, 275];
-const MUSIC_ALBUM_NAME_FONT_POSITION: [i32;2] = [255, 300];
+const VOLUME_INTEGER_FONT_POSITION: [i32;2] = [590, 532];
+const MUSIC_NAME_FONT_POSITION: [i32;2] = [240, 310];
+const MUSIC_ARTIST_NAME_FONT_POSITION: [i32;2] = [245, 345];
+const MUSIC_ALBUM_NAME_FONT_POSITION: [i32;2] = [245, 370];
 
 
 
 //====================================//
 //=========(ELEMENTS SCALES)==========//
 //====================================//
-// the background album image have the scale based on the screen size (that's why it's not here)
+// the background image have the scale based on the screen size (that's why it's not here)
 
 // fonts
 const DEFAULT_FONT_SIZE: u16 = 20;
@@ -87,10 +101,15 @@ const SMALL_FONT_SIZE: u16 = 13;
 // buttons 
 const DEFAULT_BUTTON_SIZE: [i32;2] = [50, 50];
 const SMALL_BUTTON_SIZE: [i32;2] = [35, 35];
+const SHUFFLE_INDICATOR_SIZE: [u32;2] = [5, 5];
 
 // volume bar
 const DEFAULT_VOLUME_BAR_SIZE: [u32;2] = [0, 7];
 const DEFAULT_VOLUME_BAR_BACKGROUND_SIZE: [u32;2] = [35, 7];
+const DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_SIZE: [u32;2] = [10, 10];
+const DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_SIZE: [u32;2] = [1, 10];
+const DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_SIZE: [u32;2] = [2, 13];
+const DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_SIZE: [u32;2] = [3, 17];
 
 // mini album picture
 const MINI_ALBUM_PICTURE_SIZE: [u32;2] = [200, 200];
@@ -104,18 +123,39 @@ const PROGRESS_BAR_SIZE: [u32;2] = [675, 20];
 //====================================//
 // fonts
 const DEFAULT_FONT_PATH: &str = "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf";
-const DEFAULT_FONT_COLOR: sdl2::pixels::Color = Color::RGB(255, 255, 255);
+const DEFAULT_FONT_COLOR: Color = Color::RGB(255, 255, 255);
 
 // buttons
-const DEFAULT_BUTTON_COLOR: sdl2::pixels::Color = Color::RGB(0, 153, 107);
+const DEFAULT_BUTTON_COLOR: Color = Color::RGB(255, 0, 0);
+const DEFAULT_SHUFFLE_ACTIVATED_BUTTON_COLOR: Color = Color::RGB(100, 100, 100);
 
 // progress bar 
-const DEFAULT_PROGRESS_BAR_COLOR: sdl2::pixels::Color = Color::RGB(0, 153, 107);
-const DEFAULT_BACKGROUND_PROGRESS_BAR_COLOR: sdl2::pixels::Color = Color::RGB(150, 150, 150);
+const DEFAULT_PROGRESS_BAR_COLOR: Color = Color::RGB(255, 0, 0);
+const DEFAULT_BACKGROUND_PROGRESS_BAR_COLOR: Color = Color::RGB(50, 50, 50);
 
 // volume bar 
-const DEFAULT_VOLUME_BAR_COLOR: sdl2::pixels::Color = Color::RGB(0, 153, 107);
-const DEFAULT_BACKGROUND_VOLUME_BAR_COLOR: sdl2::pixels::Color = Color::RGB(150, 150, 150);
+const DEFAULT_VOLUME_BAR_COLOR: Color = Color::RGB(255, 0, 0);
+const DEFAULT_BACKGROUND_VOLUME_BAR_COLOR: Color = Color::RGB(50, 50, 50);
+const DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_COLOR: Color = Color::RGB(255, 0, 0);
+const DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR: Color = Color::RGB(255, 0, 0);
+const DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_COLOR: Color = Color::RGB(255, 0, 0);
+const DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_COLOR: Color = Color::RGB(255, 0, 0);
+
+//===========================================================================================================//
+//=======*red theme*=====//  others theme here
+// 255, 255, 255         //  
+// 255, 0, 0             //  
+// 100, 100, 100         //      
+// 255, 0, 0             //  
+// 50, 50, 50            //      
+// 255, 0, 0             //      
+// 50, 50, 50            //      
+// 255, 0, 0             //      
+// 255, 0, 0             //      
+// 255, 0, 0             //      
+// 255, 0, 0             //          
+// black and white theme //
+//===========================================================================================================//
 
 
 
@@ -204,6 +244,56 @@ fn gen_image<'a>(path: &'a str, texture_creator: &'a TextureCreator<WindowContex
 //-------------------------------------------------------------------------------------//
 //=====================================================================================//
 
+
+//=====================================================================================//
+//-----------------------------------OFF-TOPIC----------------------------------------//
+//=====================================================================================//
+fn draw_x_rect() -> (Point, Point, Point, Point)
+{
+    let rect = Rect::new(DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_POSITION[0], DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_POSITION[1], DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_SIZE[0], DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_SIZE[1]);
+
+    let top_left = rect.top_left();
+    let bottom_left = rect.bottom_left();
+    let top_right = rect.top_right();
+    let bottom_right = rect.bottom_right();
+
+    return (top_left, bottom_left, top_right, bottom_right);
+}
+
+fn clean_string_and_spaces(received_string: String, additional_cleaning: String) -> String
+{
+    if additional_cleaning.len() > 1 
+    {
+        let clean_string_start = received_string.replace(" ", "");
+        let clean_string_middle = clean_string_start.replace(&additional_cleaning, "");
+        let clean_string_final = clean_string_middle.replace("\n", "");
+        return clean_string_final;
+    }
+    else 
+    {
+        let clean_string_start = received_string.replace(" ", "");
+        let clean_string_final = clean_string_start.replace("\n", "");
+        return clean_string_final;
+    }
+
+}
+
+fn clean_string(received_string: String, additional_cleaning: String) -> String
+{
+    if additional_cleaning.len() > 1 
+    {
+        let clean_string_start = received_string.replace(&additional_cleaning, "");
+        let clean_string_final = clean_string_start.replace("\n", "");
+        return clean_string_final;
+    }
+    else 
+    {
+        let clean_string_final = received_string.replace("\n", "");
+        return clean_string_final;
+    }
+
+}
+
 //=====================================================================================//
 //-----------------------------------VOLUME BAR----------------------------------------//
 //=====================================================================================//
@@ -258,94 +348,91 @@ fn get_percentage(x: u32, y: u32) -> f32
 
 
 
+
 //-------------------------------------------------------------------------------------//
 //----------------------------------BACKGROUND-----------------------------------------//
 //-------------------------------------------------------------------------------------//
-fn download_image(get_background_link: &mut Command)
+
+fn remove_unused_song_picture(current_song_picture_name: String, current_song_picture_path: String)
 {
-    let folder_path = String::from(".background/");
-
-    //command
-    let mut background_link = String::new();
-    get_background_link.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut background_link).unwrap();
-    let raw_string_command_to_download_the_file = format!("{} {} {} {}", "wget --quiet -P", "$PWD/.background/", background_link, "&& exit");
-    let string_command_to_download_the_file = &raw_string_command_to_download_the_file.replace("\n", "");
-    let mut download_image_command = gen_command("bash", "-c", &string_command_to_download_the_file);
-
-
-    let raw_background_link_without_https_and_format = background_link.replace("https://i.scdn.co/image/", "");
-    let background_link_without_https_and_format = raw_background_link_without_https_and_format.replace("\n", "");
-
-    let raw_background_link_without_https_with_format = format!("{}{}", background_link_without_https_and_format,".png");
-    let background_link_without_https_with_format = raw_background_link_without_https_with_format.replace("\n", "");
-
-
-    let raw_image_path_without_format = format!("{}{}", folder_path, background_link_without_https_and_format);
-    let image_path_without_format = raw_image_path_without_format.replace("\n", "");
-    
-    let raw_image_path_with_format = format!("{}{}", folder_path, background_link_without_https_with_format);
-    let image_path_with_format = raw_image_path_with_format.replace("\n", "");
-
-
-    let folder_to_check_with_the_file = Path::new(&folder_path).join(background_link_without_https_and_format.clone());
-    let folder_to_check_with_the_file_2 = Path::new(&folder_path).join(background_link_without_https_with_format.clone());
-    if folder_to_check_with_the_file.exists() 
-    {
-           fs::rename(image_path_without_format, image_path_with_format.clone()).unwrap();
-           
-           let items = fs::read_dir(&folder_path).unwrap();
-           for entry in items 
+           if Path::new(&current_song_picture_path).exists()
            {
-               let entry = entry.unwrap();
-               let entry_path = entry.path();
-               
-               if entry_path.file_name() == Some(std::ffi::OsStr::new(&background_link_without_https_with_format)) 
-               {
-                   continue; 
-               }
+                let items = fs::read_dir(String::from(".background/")).unwrap();
+                for entry in items 
+                {
+                    let entry = entry.unwrap();
+                    let entry_path = entry.path();
+                    
+                    if entry_path.file_name() == Some(std::ffi::OsStr::new(&current_song_picture_name)) 
+                    {
+                        continue; 
+                    }
 
-               if entry_path.is_file() 
-               {
-                   fs::remove_file(&entry_path).unwrap();
-               } 
+                    if entry_path.is_file() 
+                    {
+                        fs::remove_file(&entry_path).unwrap();
+                    } 
+                 }
            }
+}
 
+
+fn download_image(get_song_picture_link: &mut Command)
+{
+    //commands
+    let mut song_picture_link = String::new();
+    get_song_picture_link.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut song_picture_link).unwrap();
+
+    let raw_command_argument = format!("{} {} {} {}", "wget --quiet -P", "$PWD/.background/", song_picture_link, "&& exit");
+    let command_argument = clean_string(raw_command_argument, String::new());
+    let mut download_song_picture = gen_command("bash", "-c", &command_argument);
+
+    //strings
+    let song_picture_cache_name = clean_string_and_spaces(song_picture_link, String::from("https://i.scdn.co/image/"));
+    let song_picture_cache_path = format!("{}{}", ".background/", &song_picture_cache_name);
+    let current_song_picture_path = format!("{}{}{}", ".background/", &song_picture_cache_name, ".png");
+
+
+    if Path::new(&song_picture_cache_path).exists() 
+    {
+            if !Path::new(&current_song_picture_path).exists() 
+            {
+                fs::rename(song_picture_cache_path, current_song_picture_path).unwrap();
+            }
     }
     else 
     {
-            if !folder_to_check_with_the_file_2.exists() 
+            if !Path::new(&current_song_picture_path).exists() 
             {
-                download_image_command.spawn().unwrap();
+                download_song_picture.spawn().unwrap();
             }
     }
 }
 
 
 
-fn get_background_info(get_background_link: &mut Command) -> String
+fn get_song_picture_data(get_song_picture_link: &mut Command) -> (String, String, String)
 {
-    let mut string = String::new();
-    if string.len() > 1 { string.clear(); };
-    get_background_link.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut string).unwrap();   
+    //command
+    let mut song_picture_link = String::new();
+    get_song_picture_link.spawn().unwrap().stdout.take().unwrap().read_to_string(&mut song_picture_link).unwrap();   
     
-    if string.len() >= 24 {  string = (&string[24..]).to_string(); };
+    //strings
+    let holder_image = String::from(".background/system/holder.png");
 
-    let str: &str = &string;
-    let mut image_name: String = str.replace("\n", "");
-    let image_name_str: &str = &image_name;
+    let song_picture_cache_name = clean_string_and_spaces(song_picture_link, String::from("https://i.scdn.co/image/"));
+    let current_song_picture_name = format!("{}{}", &song_picture_cache_name, ".png");
+    let current_song_picture_path = format!("{}{}{}", ".background/", &song_picture_cache_name, ".png");
 
-    let path_to_check = format!("{}{}{}", ".background/", image_name_str, ".png");
-    if Path::new(&path_to_check).exists() 
+
+    if Path::new(&current_song_picture_path).exists() 
     {
-        image_name = path_to_check.clone();
+        return (current_song_picture_name, current_song_picture_path.clone(), current_song_picture_path);
     }
     else 
     {
-        image_name.clear();
-        image_name.push_str(".background/system/holder.png");
+        return (current_song_picture_name, current_song_picture_path, holder_image);
     };
-     
-    return image_name;
 }
 
 
@@ -429,24 +516,38 @@ fn check_shuffle(shuffle_info: &mut Command) -> bool
 //=====================================================================================//
 //---------------------------------------THE UI DATA-----------------------------------//
 //=====================================================================================//
-fn basic_ui<'a>(texture_creator: &'a TextureCreator<WindowContext>) -> (Rect, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>,  Texture<'a>)
+fn basic_ui<'a>(texture_creator: &'a TextureCreator<WindowContext>) -> (Rect,  Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>,  Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>, Texture<'a>,  Texture<'a>)
 {
     //all this ui images localitions is using the buttons rect so to change the position of the image you will need    to change the position of the buttons
-    let playing_image = gen_image("ui/media-playback-start.png", texture_creator);
-    let paused_image = gen_image("ui/media-playback-pause.png", texture_creator);
-    let next_image = gen_image("ui/media-skip-forward.png", texture_creator);
-    let previous_image = gen_image("ui/media-skip-backward.png", texture_creator);
-    let shuffle_on_image = gen_image("ui/media-random-albums-amarok.png", texture_creator);
-    let shuffle_off_image = gen_image("ui/media-playlist-shuffle.png", texture_creator);
+    let playing_image = gen_image("ui/Black-Theme/media-playback-start.png", texture_creator);
+    let paused_image = gen_image("ui/Black-Theme/media-playback-pause.png", texture_creator);
+    let next_image = gen_image("ui/Black-Theme/media-skip-forward.png", texture_creator);
+    let previous_image = gen_image("ui/Black-Theme/media-skip-backward.png", texture_creator);
+    let shuffle_on_image = gen_image("ui/Black-Theme/media-random-albums-amarok.png", texture_creator);
+    let shuffle_off_image = gen_image("ui/Black-Theme/media-playlist-shuffle.png", texture_creator);
 
-    let muted_audio_image = gen_image("ui/notification-audio-volume-muted.png", texture_creator);
-    let low_audio_image = gen_image("ui/notification-audio-volume-low.png", texture_creator);
-    let medium_audio_image = gen_image("ui/notification-audio-volume-medium.png", texture_creator);
-    let high_audio_image = gen_image("ui/notification-audio-volume-high.png", texture_creator);
+    let muted_audio_image = gen_image("ui/Black-Theme/notification-audio-volume-muted.png", texture_creator);
+    let low_audio_image = gen_image("ui/Black-Theme/notification-audio-volume-low.png", texture_creator);
+    let medium_audio_image = gen_image("ui/Black-Theme/notification-audio-volume-medium.png", texture_creator);
+    let high_audio_image = gen_image("ui/Black-Theme/notification-audio-volume-high.png", texture_creator);
+    let volume_icon_without_indicator = gen_image("ui/Black-Theme/notification-audio-volume-no-indicator.png", texture_creator);
+    
+    let playing_image_white_theme = gen_image("ui/White-Theme/media-playback-start.png", texture_creator);
+    let paused_image_white_theme = gen_image("ui/White-Theme/media-playback-pause.png", texture_creator);
+    let next_image_white_theme = gen_image("ui/White-Theme/media-skip-forward.png", texture_creator);
+    let previous_image_white_theme = gen_image("ui/White-Theme/media-skip-backward.png", texture_creator);
+    let shuffle_on_image_white_theme = gen_image("ui/White-Theme/media-random-albums-amarok.png", texture_creator);
+    let shuffle_off_image_white_theme = gen_image("ui/White-Theme/media-playlist-shuffle.png", texture_creator);
+
+    let muted_audio_image_white_theme = gen_image("ui/Black-Theme/notification-audio-volume-muted.png", texture_creator);
+    let low_audio_image_white_theme = gen_image("ui/White-Theme/notification-audio-volume-low.png", texture_creator);
+    let medium_audio_image_white_theme = gen_image("ui/White-Theme/notification-audio-volume-medium.png", texture_creator);
+    let high_audio_image_white_theme = gen_image("ui/White-Theme/notification-audio-volume-high.png", texture_creator);
+    let volume_icon_without_indicator_white_theme = gen_image("ui/White-Theme/notification-audio-volume-no-indicator.png", texture_creator);
 
     let volume_text_rect = Rect::new(VOLUME_TEXT_POSITION[0], VOLUME_TEXT_POSITION[1], 25, 25);
         
-    return (volume_text_rect, playing_image, paused_image, next_image, previous_image, shuffle_on_image, shuffle_off_image, muted_audio_image, low_audio_image, medium_audio_image, high_audio_image);
+    return (volume_text_rect,  volume_icon_without_indicator_white_theme, playing_image_white_theme, paused_image_white_theme, next_image_white_theme, previous_image_white_theme, shuffle_on_image_white_theme, shuffle_off_image_white_theme, muted_audio_image_white_theme, low_audio_image_white_theme, medium_audio_image_white_theme, high_audio_image_white_theme, volume_icon_without_indicator, playing_image, paused_image, next_image, previous_image, shuffle_on_image, shuffle_off_image, muted_audio_image, low_audio_image, medium_audio_image, high_audio_image);
 }
 
 
@@ -454,8 +555,12 @@ fn basic_ui<'a>(texture_creator: &'a TextureCreator<WindowContext>) -> (Rect, Te
 //=====================================================================================//
 //-----------------------------------THE VOLUME BAR DATA-------------------------------//
 //=====================================================================================//
-fn volume_icon(mut volume_command_string: String) -> (bool, bool, bool, bool)
+fn volume_icon(mut volume_command_string: String) -> (Rect, Rect, Rect, bool, bool, bool, bool)
 {
+    let volume_is_low_indicator_rect = Rect::new(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_POSITION[0], DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_POSITION[1], DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_SIZE[0], DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_SIZE[1]);
+    let volume_is_medium_indicator_rect = Rect::new(DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_POSITION[0] + DEFAULT_VOLUME_BAR_PADDING, DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_POSITION[1], DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_SIZE[0], DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_SIZE[1]);
+    let volume_is_high_indicator_rect = Rect::new(DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_POSITION[0] + DEFAULT_VOLUME_BAR_PADDING * 2, DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_POSITION[1], DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_SIZE[0], DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_SIZE[1]);
+
     let mut audio_is_muted = false;
     let mut audio_is_low = false;
     let mut audio_is_medium = false;
@@ -467,7 +572,7 @@ fn volume_icon(mut volume_command_string: String) -> (bool, bool, bool, bool)
     if volume_command_string == "0.5" || volume_command_string == "0.6" || volume_command_string == "0.7" { audio_is_medium = true; audio_is_low = false; audio_is_high = false; audio_is_muted = false; };
     if volume_command_string == "0.8" || volume_command_string == "0.9" || volume_command_string == "1.0" { audio_is_high = true; audio_is_low = false; audio_is_medium = false; audio_is_muted = false; };
 
-    return(audio_is_muted, audio_is_low, audio_is_medium, audio_is_high);
+    return(volume_is_low_indicator_rect, volume_is_medium_indicator_rect, volume_is_high_indicator_rect, audio_is_muted, audio_is_low, audio_is_medium, audio_is_high);
 }
 
 
@@ -518,26 +623,27 @@ fn progress_bar() -> (Rect, Rect, String)
 //=====================================================================================//
 //----------------------------------THE BACKGROUNDS DATA-------------------------------//
 //=====================================================================================//
-fn song_picture<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_background_link: &mut Command) -> (Texture<'a>, Texture<'a>, Texture<'a>, Rect)
+fn song_picture<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_song_picture_link: &mut Command) -> (Texture<'a>, Texture<'a>, Texture<'a>, Rect)
 {
-    let image_name = get_background_info(get_background_link);
-    download_image(get_background_link);
+    let (current_song_picture_name, current_song_picture_path, picture_to_make_texture) = get_song_picture_data(get_song_picture_link);
+    download_image(get_song_picture_link);
+    remove_unused_song_picture(current_song_picture_name, current_song_picture_path);
 
-    let album_picture_rect = Rect::new(MINI_ALBUM_PICTURE_POSITION[0], MINI_ALBUM_PICTURE_POSITION[1], MINI_ALBUM_PICTURE_SIZE[0], MINI_ALBUM_PICTURE_SIZE[1]);
+    let mini_album_picture_rect = Rect::new(MINI_ALBUM_PICTURE_POSITION[0], MINI_ALBUM_PICTURE_POSITION[1], MINI_ALBUM_PICTURE_SIZE[0], MINI_ALBUM_PICTURE_SIZE[1]);
 
     let background = texture_creator
-    .load_texture(&image_name)
+    .load_texture(&picture_to_make_texture)
     .unwrap();
 
-    let album_picture = texture_creator
-    .load_texture(&image_name)
+    let mini_album_picture = texture_creator
+    .load_texture(&picture_to_make_texture)
     .unwrap();
 
     let effect = texture_creator
     .load_texture(".background/system/effect.png")
     .unwrap();
 
-    return (background, album_picture, effect, album_picture_rect);
+    return (background, mini_album_picture, effect, mini_album_picture_rect);
 }
 
 
@@ -545,14 +651,15 @@ fn song_picture<'a>(texture_creator: &'a TextureCreator<WindowContext>, get_back
 //=====================================================================================//
 //------------------------------------THE BUTTONS DATA---------------------------------//
 //=====================================================================================//
-fn buttons() -> (Rect, Rect, Rect, Rect)
+fn buttons() -> (Rect, Rect, Rect, Rect, Rect)
 {
-    let shuffle_button_rect = Rect::new(SMALL_BUTTON_MEDIA_POSITION[0] - SMALL_BUTTON_PADDING, SMALL_BUTTON_MEDIA_POSITION[1], SMALL_BUTTON_SIZE[0].try_into().unwrap(), SMALL_BUTTON_SIZE[1].try_into().unwrap());
     let previous_rect = Rect::new(DEFAULT_BUTTON_MEDIA_POSITION[0] - DEFAULT_BUTTON_PADDING, DEFAULT_BUTTON_MEDIA_POSITION[1], DEFAULT_BUTTON_SIZE[0].try_into().unwrap(), DEFAULT_BUTTON_SIZE[1].try_into().unwrap());
     let pause_rect = Rect::new(DEFAULT_BUTTON_MEDIA_POSITION[0], DEFAULT_BUTTON_MEDIA_POSITION[1], DEFAULT_BUTTON_SIZE[0].try_into().unwrap(), DEFAULT_BUTTON_SIZE[1].try_into().unwrap());
     let next_rect = Rect::new(DEFAULT_BUTTON_MEDIA_POSITION[0] + DEFAULT_BUTTON_PADDING, DEFAULT_BUTTON_MEDIA_POSITION[1], DEFAULT_BUTTON_SIZE[0].try_into().unwrap(), DEFAULT_BUTTON_SIZE[1].try_into().unwrap());
+    let shuffle_button_rect = Rect::new(SMALL_BUTTON_MEDIA_POSITION[0] - SMALL_BUTTON_PADDING, SMALL_BUTTON_MEDIA_POSITION[1], SMALL_BUTTON_SIZE[0].try_into().unwrap(), SMALL_BUTTON_SIZE[1].try_into().unwrap());
+    let shuffle_indicator_rect = Rect::new(SHUFFLE_INDICATOR_POSITION[0] - SMALL_BUTTON_PADDING, SHUFFLE_INDICATOR_POSITION[1], SHUFFLE_INDICATOR_SIZE[0], SHUFFLE_INDICATOR_SIZE[1]);
 
-    return (previous_rect, pause_rect, next_rect, shuffle_button_rect);
+    return (previous_rect, pause_rect, next_rect, shuffle_button_rect, shuffle_indicator_rect);
 }
 
 
@@ -597,7 +704,7 @@ fn commands() -> (Command, Command, Command, Command, Command, Command, Command,
     let get_time_remaining = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata --format '{{ duration(mpris:length - position) }}' && exit");
     let music_artist_info = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata --format '{{ artist }}' && exit");
     let music_album_info = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata --format '{{ album }}' && exit");
-    let get_background_link = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata mpris:artUrl && exit");
+    let get_song_picture_link = gen_command_with_output(default_shell, default_argument, "playerctl --player=spotify -s metadata mpris:artUrl && exit");
 
     return(
             volume_info,
@@ -616,7 +723,7 @@ fn commands() -> (Command, Command, Command, Command, Command, Command, Command,
             get_time_remaining,
             music_artist_info,
             music_album_info, 
-            get_background_link,
+            get_song_picture_link,
             );
 }
 
@@ -666,14 +773,22 @@ fn window() -> (Canvas<Window>, TextureCreator<WindowContext>, sdl2::Sdl)
 //=====================================================================================//
 //---------------------------------THE WINDOW RENDER-----------------------------------//
 //=====================================================================================//
-fn render_scene(music_progress_bar_background: Rect, music_progress_bar_rect: Rect, volume_rect: Rect, playing_image: &Texture, paused_image: &Texture, next_image: &Texture, previous_image: &Texture, shuffle_on_image: &Texture, shuffle_off_image: &Texture, muted_audio_image: &Texture, low_audio_image: &Texture, medium_audio_image: &Texture, high_audio_image: &Texture, previous_rect: Rect, pause_rect: Rect, next_rect: Rect, shuffle_button_rect: Rect, audio_is_muted: bool, audio_is_low: bool, audio_is_medium: bool, audio_is_high: bool, volume_level_bar: Rect, under_volume_bar: Rect, background: Texture, album_picture: Texture, effect: Texture, album_picture_rect: Rect, music_artist_text: Texture, music_artist_rect: Rect, music_album_text: Texture, music_album_rect: Rect, time_remaining_text: Texture, time_remaining_rect: Rect, volume_integer_text: Texture, volume_integer_rect: Rect, music_name_text: Texture, music_name_rect: Rect, status_bool: bool, shuffle_bool: bool, canvas: &mut Canvas<Window>)
+fn render_scene(volume_icon_without_indicator_white_theme: &Texture, playing_image_white_theme: &Texture, paused_image_white_theme: &Texture, next_image_white_theme: &Texture, previous_image_white_theme: &Texture, shuffle_on_image_white_theme: &Texture, shuffle_off_image_white_theme: &Texture, muted_audio_image_white_theme: &Texture, low_audio_image_white_theme: &Texture, medium_audio_image_white_theme: &Texture, high_audio_image_white_theme: &Texture, volume_icon_without_indicator: &Texture, volume_is_low_indicator_rect: Rect, volume_is_medium_indicator_rect: Rect, volume_is_high_indicator_rect: Rect, shuffle_indicator_rect: Rect, music_progress_bar_background: Rect, music_progress_bar_rect: Rect, volume_rect: Rect, playing_image: &Texture, paused_image: &Texture, next_image: &Texture, previous_image: &Texture, shuffle_on_image: &Texture, shuffle_off_image: &Texture, muted_audio_image: &Texture, low_audio_image: &Texture, medium_audio_image: &Texture, high_audio_image: &Texture, previous_rect: Rect, pause_rect: Rect, next_rect: Rect, shuffle_button_rect: Rect, audio_is_muted: bool, audio_is_low: bool, audio_is_medium: bool, audio_is_high: bool, volume_level_bar: Rect, under_volume_bar: Rect, background: Texture, album_picture: Texture, effect: Texture, album_picture_rect: Rect, music_artist_text: Texture, music_artist_rect: Rect, music_album_text: Texture, music_album_rect: Rect, time_remaining_text: Texture, time_remaining_rect: Rect, volume_integer_text: Texture, volume_integer_rect: Rect, music_name_text: Texture, music_name_rect: Rect, status_bool: bool, shuffle_bool: bool, canvas: &mut Canvas<Window>)
 {
+
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
     
+
+
+
+
     // background
     canvas.copy(&background, None, None).unwrap();
     canvas.copy(&effect, None, None).unwrap();
+
+    
+
 
     // mini album picture
     canvas.copy(&album_picture, None, album_picture_rect).unwrap();
@@ -684,6 +799,8 @@ fn render_scene(music_progress_bar_background: Rect, music_progress_bar_rect: Re
     canvas.fill_rect(previous_rect).unwrap();
     canvas.fill_rect(pause_rect).unwrap();
     canvas.fill_rect(next_rect).unwrap();
+
+
 
     // volume bar
     canvas.set_draw_color(DEFAULT_BACKGROUND_VOLUME_BAR_COLOR);
@@ -699,16 +816,56 @@ fn render_scene(music_progress_bar_background: Rect, music_progress_bar_rect: Re
     canvas.copy(&time_remaining_text, None, time_remaining_rect).unwrap();
 
     // media buttons
-    canvas.copy(next_image, None, next_rect).unwrap();
-    canvas.copy(previous_image, None, previous_rect).unwrap();
-    if audio_is_muted { canvas.copy(muted_audio_image, None, volume_rect).unwrap(); }
-    if audio_is_low { canvas.copy(low_audio_image, None, volume_rect).unwrap(); }
-    if audio_is_medium { canvas.copy(medium_audio_image, None, volume_rect).unwrap(); }
-    if audio_is_high { canvas.copy(high_audio_image, None, volume_rect).unwrap(); }
-    if shuffle_bool { canvas.copy(shuffle_on_image, None, shuffle_button_rect).unwrap(); }
-    if status_bool { canvas.copy(paused_image, None, pause_rect).unwrap(); }
-    if !shuffle_bool { canvas.copy(shuffle_off_image, None, shuffle_button_rect).unwrap(); }
-    if !status_bool { canvas.copy(playing_image, None, pause_rect).unwrap(); }
+    if !WHITE_THEME_FOR_ICONS { canvas.copy(next_image, None, next_rect).unwrap(); }
+    if !WHITE_THEME_FOR_ICONS { canvas.copy(previous_image, None, previous_rect).unwrap(); }
+    if WHITE_THEME_FOR_ICONS { canvas.copy(next_image_white_theme, None, next_rect).unwrap(); }
+    if WHITE_THEME_FOR_ICONS { canvas.copy(previous_image_white_theme, None, previous_rect).unwrap(); }
+
+    if audio_is_muted && USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(muted_audio_image, None, volume_rect).unwrap(); }
+    if audio_is_low && USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(low_audio_image, None, volume_rect).unwrap(); }
+    if audio_is_medium && USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(medium_audio_image, None, volume_rect).unwrap(); }
+    if audio_is_high && USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(high_audio_image, None, volume_rect).unwrap(); }
+
+    let (top_left, bottom_left, top_right, bottom_right) = draw_x_rect();
+    if audio_is_muted && !USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(volume_icon_without_indicator, None, volume_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_COLOR); canvas.draw_line(top_left, bottom_right).unwrap(); canvas.draw_line(top_right, bottom_left).unwrap(); }
+    if audio_is_low  && !USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.set_draw_color(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_low_indicator_rect).unwrap(); canvas.copy(&volume_icon_without_indicator, None, volume_rect).unwrap(); }
+    if audio_is_medium  && !USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS {canvas.set_draw_color(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_low_indicator_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_medium_indicator_rect).unwrap(); canvas.copy(&volume_icon_without_indicator, None, volume_rect).unwrap(); }
+    if audio_is_high  && !USE_IMAGE_FOR_VOLUME_INDICATOR && !WHITE_THEME_FOR_ICONS {canvas.set_draw_color(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_low_indicator_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_medium_indicator_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_high_indicator_rect).unwrap();  canvas.copy(&volume_icon_without_indicator, None, volume_rect).unwrap(); }
+
+
+    if audio_is_muted && USE_IMAGE_FOR_VOLUME_INDICATOR && WHITE_THEME_FOR_ICONS { canvas.copy(muted_audio_image_white_theme, None, volume_rect).unwrap(); }
+    if audio_is_low && USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS { canvas.copy(low_audio_image_white_theme, None, volume_rect).unwrap(); }
+    if audio_is_medium && USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS { canvas.copy(medium_audio_image_white_theme, None, volume_rect).unwrap(); }
+    if audio_is_high && USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS { canvas.copy(high_audio_image_white_theme, None, volume_rect).unwrap(); }
+
+    let (top_left, bottom_left, top_right, bottom_right) = draw_x_rect();
+    if audio_is_muted && !USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS { canvas.copy(volume_icon_without_indicator_white_theme, None, volume_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_MUTED_BAR_ICON_INDICATOR_COLOR); canvas.draw_line(top_left, bottom_right).unwrap(); canvas.draw_line(top_right, bottom_left).unwrap(); }
+    if audio_is_low  && !USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS { canvas.set_draw_color(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_low_indicator_rect).unwrap(); canvas.copy(&volume_icon_without_indicator_white_theme, None, volume_rect).unwrap(); }
+    if audio_is_medium  && !USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS {canvas.set_draw_color(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_low_indicator_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_medium_indicator_rect).unwrap(); canvas.copy(&volume_icon_without_indicator_white_theme, None, volume_rect).unwrap(); }
+    if audio_is_high  && !USE_IMAGE_FOR_VOLUME_INDICATOR  && WHITE_THEME_FOR_ICONS {canvas.set_draw_color(DEFAULT_VOLUME_LOW_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_low_indicator_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_MEDIUM_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_medium_indicator_rect).unwrap(); canvas.set_draw_color(DEFAULT_VOLUME_HIGH_BAR_ICON_INDICATOR_COLOR); canvas.fill_rect(volume_is_high_indicator_rect).unwrap();  canvas.copy(&volume_icon_without_indicator_white_theme, None, volume_rect).unwrap(); }
+
+
+
+
+
+
+    if status_bool && !WHITE_THEME_FOR_ICONS { canvas.copy(paused_image, None, pause_rect).unwrap(); }
+    if status_bool && WHITE_THEME_FOR_ICONS { canvas.copy(&paused_image_white_theme, None, pause_rect).unwrap(); }
+    if !status_bool && !WHITE_THEME_FOR_ICONS { canvas.copy(playing_image, None, pause_rect).unwrap(); }
+    if !status_bool && WHITE_THEME_FOR_ICONS { canvas.copy(&playing_image_white_theme, None, pause_rect).unwrap(); }
+
+    if shuffle_bool && USE_IMAGE_FOR_SHUFFLE_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_on_image, None, shuffle_button_rect).unwrap(); }
+    if shuffle_bool && !USE_IMAGE_FOR_SHUFFLE_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_off_image, None, shuffle_button_rect).unwrap(); canvas.set_draw_color(DEFAULT_SHUFFLE_ACTIVATED_BUTTON_COLOR); canvas.fill_rect(shuffle_indicator_rect).unwrap(); }
+
+    if !shuffle_bool && USE_IMAGE_FOR_SHUFFLE_INDICATOR && !WHITE_THEME_FOR_ICONS  { canvas.copy(shuffle_off_image, None, shuffle_button_rect).unwrap(); }
+    if !shuffle_bool && !USE_IMAGE_FOR_SHUFFLE_INDICATOR && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_off_image, None, shuffle_button_rect).unwrap(); }
+    
+    if shuffle_bool && USE_IMAGE_FOR_SHUFFLE_INDICATOR && WHITE_THEME_FOR_ICONS { canvas.copy(&shuffle_on_image_white_theme, None, shuffle_button_rect).unwrap(); }
+    if shuffle_bool && !USE_IMAGE_FOR_SHUFFLE_INDICATOR && WHITE_THEME_FOR_ICONS { canvas.copy(&shuffle_off_image_white_theme, None, shuffle_button_rect).unwrap(); canvas.set_draw_color(DEFAULT_SHUFFLE_ACTIVATED_BUTTON_COLOR); canvas.fill_rect(shuffle_indicator_rect).unwrap(); }
+
+    if !shuffle_bool && USE_IMAGE_FOR_SHUFFLE_INDICATOR  && WHITE_THEME_FOR_ICONS { canvas.copy(&shuffle_off_image_white_theme, None, shuffle_button_rect).unwrap(); }
+    if !shuffle_bool && !USE_IMAGE_FOR_SHUFFLE_INDICATOR && WHITE_THEME_FOR_ICONS { canvas.copy(&shuffle_off_image_white_theme, None, shuffle_button_rect).unwrap(); }
+    
 
     // fonts
     canvas.copy(&music_name_text, None, music_name_rect).unwrap();
@@ -741,11 +898,11 @@ fn system()
             //window
             let (mut canvas, texture_creator, sdl_started) = window();
             //commands
-            let (mut volume_info, mut status_info, mut music_name_info, mut shuffle_info, mut shuffle_on, mut shuffle_off, mut next, mut previous, mut pause_play, mut volume_up, mut volume_down, _, _, _, mut music_artist_info, mut music_album_info, mut get_background_link) = commands();
+            let (mut volume_info, mut status_info, mut music_name_info, mut shuffle_info, mut shuffle_on, mut shuffle_off, mut next, mut previous, mut pause_play, mut volume_up, mut volume_down, _, _, _, mut music_artist_info, mut music_album_info, mut get_song_picture_link) = commands();
             //buttons
-            let (previous_rect, pause_rect, next_rect, shuffle_button_rect) = buttons();
+            let (previous_rect, pause_rect, next_rect, shuffle_button_rect, shuffle_indicator_rect) = buttons();
             //basic ui
-            let (volume_rect, playing_image, paused_image, next_image, previous_image, shuffle_on_image, shuffle_off_image, muted_audio_image, low_audio_image, medium_audio_image, high_audio_image) = basic_ui(&texture_creator);
+            let (volume_rect, volume_icon_without_indicator_white_theme, playing_image_white_theme, paused_image_white_theme, next_image_white_theme, previous_image_white_theme, shuffle_on_image_white_theme, shuffle_off_image_white_theme, muted_audio_image_white_theme, low_audio_image_white_theme, medium_audio_image_white_theme, high_audio_image_white_theme, volume_icon_without_indicator, playing_image, paused_image, next_image, previous_image, shuffle_on_image, shuffle_off_image, muted_audio_image, low_audio_image, medium_audio_image, high_audio_image) = basic_ui(&texture_creator);
 
 //===========================================THE LOOP START================================================
 let mut event_pump = sdl_started.event_pump().unwrap(); 'running: loop { std::thread::sleep(Duration::from_millis(32)); 
@@ -762,16 +919,16 @@ let mut event_pump = sdl_started.event_pump().unwrap(); 'running: loop { std::th
             let shuffle_bool = check_shuffle(&mut shuffle_info);
             //volume bar body, progress and icons
             let volume_command_string = get_volume_value_in_string(&mut volume_info);
-            let (audio_is_muted, audio_is_low, audio_is_medium, audio_is_high) = volume_icon(volume_command_string.clone());
+            let (volume_is_low_indicator_rect, volume_is_medium_indicator_rect, volume_is_high_indicator_rect, audio_is_muted, audio_is_low, audio_is_medium, audio_is_high) = volume_icon(volume_command_string.clone());
             let (volume_level_bar, under_volume_bar) = volume_bar(volume_command_string.clone());
             //progress bar
             let (music_progress_bar_background_rect, music_progress_bar_rect, music_time_remaining_string) = progress_bar();
             //background and album picture
-            let (background, album_picture, effect, album_picture_rect) = song_picture(&texture_creator, &mut get_background_link);
+            let (background, album_picture, effect, album_picture_rect) = song_picture(&texture_creator, &mut get_song_picture_link);
             //fonts
             let (music_artist_text, music_artist_rect, music_album_text, music_album_rect, time_remaining_text, time_remaining_rect, volume_integer_text, volume_integer_rect, music_name_text, music_name_rect) = fonts(volume_command_string.clone(), music_time_remaining_string, music_artist_string.clone(), music_album_string.clone(), &texture_creator, music_name_string.clone(),);
             //render
-            render_scene(music_progress_bar_background_rect, music_progress_bar_rect, volume_rect, &playing_image, &paused_image, &next_image, &previous_image, &shuffle_on_image, &shuffle_off_image, &muted_audio_image, &low_audio_image, &medium_audio_image, &high_audio_image, previous_rect, pause_rect, next_rect, shuffle_button_rect, audio_is_muted, audio_is_low, audio_is_medium, audio_is_high, volume_level_bar, under_volume_bar, background, album_picture, effect, album_picture_rect, music_artist_text, music_artist_rect, music_album_text, music_album_rect, time_remaining_text, time_remaining_rect, volume_integer_text, volume_integer_rect, music_name_text, music_name_rect, status_bool, shuffle_bool, &mut canvas);
+            render_scene(&volume_icon_without_indicator_white_theme, &playing_image_white_theme, &paused_image_white_theme, &next_image_white_theme, &previous_image_white_theme, &shuffle_on_image_white_theme, &shuffle_off_image_white_theme, &muted_audio_image_white_theme, &low_audio_image_white_theme, &medium_audio_image_white_theme, &high_audio_image_white_theme, &volume_icon_without_indicator, volume_is_low_indicator_rect, volume_is_medium_indicator_rect, volume_is_high_indicator_rect, shuffle_indicator_rect, music_progress_bar_background_rect, music_progress_bar_rect, volume_rect, &playing_image, &paused_image, &next_image, &previous_image, &shuffle_on_image, &shuffle_off_image, &muted_audio_image, &low_audio_image, &medium_audio_image, &high_audio_image, previous_rect, pause_rect, next_rect, shuffle_button_rect, audio_is_muted, audio_is_low, audio_is_medium, audio_is_high, volume_level_bar, under_volume_bar, background, album_picture, effect, album_picture_rect, music_artist_text, music_artist_rect, music_album_text, music_album_rect, time_remaining_text, time_remaining_rect, volume_integer_text, volume_integer_rect, music_name_text, music_name_rect, status_bool, shuffle_bool, &mut canvas);
 
         
 
