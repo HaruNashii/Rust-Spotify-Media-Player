@@ -12,51 +12,46 @@ also ever elements in this app can change position, size and color!
 
 
 ## Dependencies
-- Curl
-**How To Istall Curl**
-Fedora
-```sudo dnf install curl```
-Debian, Ubuntu, Linux Mint, Etc...
-```sudo apt install curl```
-Arch Linux
-```sudo pacman -S curl```
-Void Linux
-```sudo xbps-install -y -f curl```
-
 - [playerctl](https://github.com/altdesktop/playerctl)
-**How To Istall PlayerCtl**
-Fedora
-```sudo dnf install playerctl```
-Debian, Ubuntu, Linux Mint, Etc...
-```sudo apt install playerctl```
-Arch Linux
-```sudo pacman -S playerctl```
-Void Linux
-```sudo xbps-install -y -f curl```
-Any Others Distros Linux Can Be Download Via The Guix Package Manager with
-```guix install playerctl```
-
+- Curl 
 - Rust/Cargo
-**How To Istall Rust/Cargo**
-Fedora
-```sudo dnf install cargo```
-Debian, Ubuntu, Linux Mint, Etc...
-```sudo apt install -y cargo```
-Arch Linux 
-```sudo pacman -Sy cargo```
-Void Linux
-```sudo xbps-install -y -f cargo```
-
 - sdl2, sdl2-image sdl2-ttf
-- **How To Istall sdl2, sdl2-image and sdl2-ttf**
-Fedora
-```sudo dnf install SDL2 SDL2_image SDL2_ttf```
-Debian, Ubuntu, Linux Mint, Etc...
-```sudo apt install -y libsdl2-image-dev libsdl2-ttf-dev```
-Arch Linux 
-```sudo pacman -S sdl2 sdl2_image sdl2_ttf```
-Void Linux
-```sudo xbps-install -y -f SDL2_image SDL2_image-devel SDL2_ttf SDL2_ttf-devel```
+
+
+
+
+
+## How To Install Dependencies
+**How To Istall Curl**
+<p>Fedora <br> ```sudo dnf install curl``` </p>
+<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install curl``` </p>
+<p>Arch Linux <br> ```sudo pacman -S curl``` </p>
+<p>Void Linux <br> ```sudo xbps-install -y -f curl``` </p>
+
+
+
+**How To Istall PlayerCtl**
+<p>Fedora <br> ```sudo dnf install playerctl``` </p>
+<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install playerctl``` </p>
+<p>Arch Linux <br> ```sudo pacman -S playerctl``` </p>
+<p>Void Linux <br> ```sudo xbps-install -y -f curl``` </p>
+<p>Any Others Distros Linux Can Be Download Via The Guix Package Manager with <br> ```guix install playerctl``` </p>
+
+
+
+**How To Istall Rust/Cargo**
+<p>Fedora <br> ```sudo dnf install cargo```
+<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install -y cargo```
+<p>Arch Linux <br> ```sudo pacman -Sy cargo```
+<p>Void Linux <br> ```sudo xbps-install -y -f cargo```
+
+
+
+**How To Istall sdl2, sdl2-image and sdl2-ttf**
+<p>Fedora <br> ```sudo dnf install SDL2 SDL2_image SDL2_ttf```</p>
+<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install -y libsdl2-image-dev libsdl2-ttf-dev```</p>
+<p>Arch Linux <br> ```sudo pacman -S sdl2 sdl2_image sdl2_ttf```</p>
+<p>Void Linux <br> ```sudo xbps-install -y -f SDL2_image SDL2_image-devel SDL2_ttf SDL2_ttf-devel```</p>
 
 
 
