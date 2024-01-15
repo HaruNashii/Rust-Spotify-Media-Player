@@ -21,37 +21,15 @@ also ever elements in this app can change position, size and color!
 
 
 
-## How To Install Dependencies
-**How To Istall Curl**
-<p>Fedora <br> ```sudo dnf install curl``` </p>
-<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install curl``` </p>
-<p>Arch Linux <br> ```sudo pacman -S curl``` </p>
-<p>Void Linux <br> ```sudo xbps-install -y -f curl``` </p>
-
-
-
-**How To Istall PlayerCtl**
-<p>Fedora <br> ```sudo dnf install playerctl``` </p>
-<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install playerctl``` </p>
-<p>Arch Linux <br> ```sudo pacman -S playerctl``` </p>
-<p>Void Linux <br> ```sudo xbps-install -y -f curl``` </p>
-<p>Any Others Distros Linux Can Be Download Via The Guix Package Manager with <br> ```guix install playerctl``` </p>
-
-
-
-**How To Istall Rust/Cargo**
-<p>Fedora <br> ```sudo dnf install cargo```
-<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install -y cargo```
-<p>Arch Linux <br> ```sudo pacman -Sy cargo```
-<p>Void Linux <br> ```sudo xbps-install -y -f cargo```
-
-
-
-**How To Istall sdl2, sdl2-image and sdl2-ttf**
-<p>Fedora <br> ```sudo dnf install SDL2 SDL2_image SDL2_ttf```</p>
-<p>Debian, Ubuntu, Linux Mint, Etc... <br> ```sudo apt install -y libsdl2-image-dev libsdl2-ttf-dev```</p>
-<p>Arch Linux <br> ```sudo pacman -S sdl2 sdl2_image sdl2_ttf```</p>
-<p>Void Linux <br> ```sudo xbps-install -y -f SDL2_image SDL2_image-devel SDL2_ttf SDL2_ttf-devel```</p>
+## Install All Dependencies
+- Fedora
+```sudo dnf install curl playerctl cargo SDL2 SDL2_image SDL2_ttf```
+- Debian, Ubuntu, Linux Mint, Etc...
+```sudo apt install curl playerctl cargo libsdl2-image-dev libsdl2-ttf-dev```
+- Arch Linux
+```sudo pacman -S curl playerctl cargo sdl2 sdl2_image sdl2_ttf```
+- Void Linux
+```sudo xbps-install -y -f curl playerctl cargo SDL2_image SDL2_image-devel SDL2_ttf SDL2_ttf-devel```
 
 
 
@@ -70,7 +48,7 @@ Run Build Script
 
 
 ## Running
-After Building the app will be localized in "target/release" just run the "media" app with
+After Building the app will be localized in "target/release". just run the "media" app with
 ```./media``` OR run with one file manager like (thunar, nemo, nautilus, etc...).
 
 
