@@ -36,11 +36,11 @@ also ever elements in this app can change position, size and color!
 
 
 ## Building
-Clone The Repo
+- Clone The Repo
 ```https://github.com/HaruNashii/Rust-Spotify-Media-Player/edit/main/README.md```
-Go To Repo Folder
+- Go To Repo Folder
 ```cd Rust-Spotify-Media-Player```
-Run Build Script
+- Run Build Script
 ```./build.sh```
 
 
