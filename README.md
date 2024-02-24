@@ -6,6 +6,7 @@
 ## THEMING
 >[!WARNING]
 >**don't change the window size because the elements will not be aligned correctly**
+
 This APP Supports theming the app by changing the icons png on the ui folder or changing some icons via code
 also ever elements in this app can change position, size and color!
 
