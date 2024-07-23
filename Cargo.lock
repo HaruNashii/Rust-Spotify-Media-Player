@@ -30,8 +30,15 @@ checksum = "a08173bc88b7955d1b3145aa561539096c421ac8debde8cbc3612ec635fee29b"
 name = "media"
 version = "0.1.0"
 dependencies = [
+ "playerctl",
  "sdl2",
 ]
+
+[[package]]
+name = "playerctl"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46e64d4850dfbd759aa3f4e303674ee3f697b9548ab60dc0e2571dc43568a7c7"
 
 [[package]]
 name = "sdl2"

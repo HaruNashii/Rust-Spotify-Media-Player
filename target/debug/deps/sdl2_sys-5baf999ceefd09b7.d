@@ -1,0 +1,14 @@
+/home/haru/Code/rust/rust-spotify-media-player/target/debug/deps/libsdl2_sys-5baf999ceefd09b7.rmeta: /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/lib.rs /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/image.rs /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/ttf.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_bindings.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_image_bindings.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_ttf_bindings.rs
+
+/home/haru/Code/rust/rust-spotify-media-player/target/debug/deps/libsdl2_sys-5baf999ceefd09b7.rlib: /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/lib.rs /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/image.rs /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/ttf.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_bindings.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_image_bindings.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_ttf_bindings.rs
+
+/home/haru/Code/rust/rust-spotify-media-player/target/debug/deps/sdl2_sys-5baf999ceefd09b7.d: /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/lib.rs /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/image.rs /home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/ttf.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_bindings.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_image_bindings.rs /home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_ttf_bindings.rs
+
+/home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/lib.rs:
+/home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/image.rs:
+/home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/src/ttf.rs:
+/home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_bindings.rs:
+/home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_image_bindings.rs:
+/home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out/sdl_ttf_bindings.rs:
+
+# env-dep:OUT_DIR=/home/haru/Code/rust/rust-spotify-media-player/target/debug/build/sdl2-sys-cdfa8a5ddd5f7220/out
