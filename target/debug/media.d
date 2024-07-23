@@ -1,1 +1,0 @@
-/home/haru/Code/rust/rust-spotify-media-player/target/debug/media: /home/haru/Code/rust/rust-spotify-media-player/src/main.rs /home/haru/Code/rust/rust-spotify-media-player/src/playerctl_extra.rs /home/haru/Code/rust/rust-spotify-media-player/src/renderer.rs
