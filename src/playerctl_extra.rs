@@ -1,19 +1,15 @@
 use std::process::Command;
 
+
+
 pub fn command(command: &str) -> String {
     let mut parts = command.split_whitespace().collect::<Vec<&str>>();
-
-    let stdout = Command::new(parts.remove(0))
-        .args(parts)
-        .output()
-        .unwrap_or_else(|_| panic!("Failed to execute command '{}'", command))
-        .stdout;
+    let stdout = Command::new(parts.remove(0)).args(parts).output().unwrap_or_else(|_| panic!("Failed to execute command '{}'", command)).stdout;
 
     String::from_utf8(stdout).expect("Stdout was not valid UTF-8")
 }
 
 
-// VOLUME
 pub fn volume_get() -> String {
     let mut volume = command("playerctl volume");
 
@@ -30,7 +26,6 @@ pub fn volume_down(amount: f32) {
     command(&format!("playerctl volume {}-", amount));
 }
 
-// TIME
 pub fn total_time_get() -> String {
     command("playerctl --player=spotify -s metadata --format '{{duration(mpris:length)}}'")
 }
@@ -40,7 +35,9 @@ pub fn current_time_get() -> String {
 }
 
 pub fn remaining_time_get() -> String {
-    command("playerctl --player=spotify -s metadata --format '{{duration(mpris:length-position)}}'")
+    let mut string_to_send = command("playerctl --player=spotify -s metadata --format '{{duration(mpris:length-position)}}'");
+    string_to_send.pop();
+    string_to_send
 }
 
 // this is only necessary because the crate "Playerctl" Has one ERROR in the "ShuffleStatus" enum
@@ -57,7 +54,6 @@ pub fn status_get() -> String {
     command("playerctl --player=spotify status")
 }
 
-// MISC
 pub fn art_url_get() -> String {
     command("playerctl --player=spotify -s metadata mpris:artUrl")
 }
