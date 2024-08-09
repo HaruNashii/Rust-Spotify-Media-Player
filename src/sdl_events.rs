@@ -1,11 +1,12 @@
+use std::process::exit;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 use sdl2::rect::Rect;
 
 use crate::playerctl_extra::*;
-use crate::DEFAULT_BUTTON_SIZE;
-use crate::SMALL_BUTTON_SIZE;
+use crate::ui::DEFAULT_BUTTON_SIZE;
+use crate::ui::SMALL_BUTTON_SIZE;
 use playerctl::PlayerCtl;
 
 
@@ -14,7 +15,7 @@ const AUDIO_STEP: f32 = 0.1;
 
 
 
-pub fn sdl_events( previous_rect: Rect, pause_rect: Rect, next_rect: Rect, shuffle_button_rect: Rect, event_pump: &mut sdl2::EventPump) {
+pub fn sdl_events(buttons_rect_vec: &Vec<Rect>, event_pump: &mut sdl2::EventPump) {
     for event in event_pump.poll_iter() {
         match event {
 
@@ -22,19 +23,19 @@ pub fn sdl_events( previous_rect: Rect, pause_rect: Rect, next_rect: Rect, shuff
             //------------------------------------------------MEDIA MOUSE CHECKER--------------------------------------------//
             //===============================================================================================================//
             Event::MouseButtonDown { mouse_btn: MouseButton::Left, x, y, ..} => {
-                if x >= pause_rect.x && x <= pause_rect.x + DEFAULT_BUTTON_SIZE[0] && y >= pause_rect.y && y <= pause_rect.y + DEFAULT_BUTTON_SIZE[1] {
-                    PlayerCtl::play_pause();
-                }
-
-                if x >= next_rect.x && x <= next_rect.x + DEFAULT_BUTTON_SIZE[0] && y >= next_rect.y && y <= next_rect.y + DEFAULT_BUTTON_SIZE[1] {
-                    PlayerCtl::next();
-                }
-
-                if x >= previous_rect.x && x <= previous_rect.x + DEFAULT_BUTTON_SIZE[0] && y >= previous_rect.y && y <= previous_rect.y + DEFAULT_BUTTON_SIZE[1] {
+                if x >= buttons_rect_vec[0].x && x <= buttons_rect_vec[0].x + DEFAULT_BUTTON_SIZE[0] && y >= buttons_rect_vec[0].y && y <= buttons_rect_vec[0].y + DEFAULT_BUTTON_SIZE[1] {
                     shuffle_toggle_set();
                 }
 
-                if x >= shuffle_button_rect.x && x <= shuffle_button_rect.x + SMALL_BUTTON_SIZE[1] && y >= shuffle_button_rect.y && y <= shuffle_button_rect.y + SMALL_BUTTON_SIZE[1] {
+                if x >= buttons_rect_vec[1].x && x <= buttons_rect_vec[1].x + DEFAULT_BUTTON_SIZE[0] && y >= buttons_rect_vec[1].y && y <= buttons_rect_vec[1].y + DEFAULT_BUTTON_SIZE[1] {
+                    PlayerCtl::play_pause();
+                }
+
+                if x >= buttons_rect_vec[2].x && x <= buttons_rect_vec[2].x + DEFAULT_BUTTON_SIZE[0] && y >= buttons_rect_vec[2].y && y <= buttons_rect_vec[2].y + DEFAULT_BUTTON_SIZE[1] {
+                    PlayerCtl::next();
+                }
+
+                if x >= buttons_rect_vec[3].x && x <= buttons_rect_vec[3].x + SMALL_BUTTON_SIZE[1] && y >= buttons_rect_vec[3].y && y <= buttons_rect_vec[3].y + SMALL_BUTTON_SIZE[1] {
                     shuffle_toggle_set();
                 }
             }
@@ -70,7 +71,7 @@ pub fn sdl_events( previous_rect: Rect, pause_rect: Rect, next_rect: Rect, shuff
             //------------------------------------QUIT EVENT & QUIT KEYCHECKER (KEYBOARD)------------------------------------//
             //===============================================================================================================//
             sdl2::event::Event::Quit { .. } | sdl2::event::Event::KeyDown { keycode: Some(sdl2::keyboard::Keycode::Escape), .. } => {
-                panic!("App Exited.");
+                exit(0);
             }
 
             _ => {}

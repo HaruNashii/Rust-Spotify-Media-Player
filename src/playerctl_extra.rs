@@ -37,7 +37,7 @@ pub fn current_time_get() -> String {
 pub fn remaining_time_get() -> String {
     let mut string_to_send = command("playerctl --player=spotify -s metadata --format '{{duration(mpris:length-position)}}'");
     string_to_send.pop();
-    string_to_send
+    string_to_send.replace("'", "")
 }
 
 // this is only necessary because the crate "Playerctl" Has one ERROR in the "ShuffleStatus" enum

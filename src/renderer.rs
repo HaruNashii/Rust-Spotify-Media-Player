@@ -61,8 +61,7 @@ pub fn window() -> (Canvas<Window>, TextureCreator<WindowContext>, sdl2::Sdl) {
     let video_system = sdl_started.video().unwrap();
     let window = video_system.window("Media", WINDOW_WIDTH, WINDOW_HEIGHT).position_centered().build().map_err(|e| e.to_string()).unwrap();
 
-    let mut canvas = window.into_canvas().accelerated().build().map_err(|e| e.to_string()).unwrap();
-    canvas.set_logical_size(WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
+    let canvas = window.into_canvas().accelerated().build().map_err(|e| e.to_string()).unwrap();
 
     let texture_creator = canvas.texture_creator();
 
@@ -70,7 +69,7 @@ pub fn window() -> (Canvas<Window>, TextureCreator<WindowContext>, sdl2::Sdl) {
 }
 
 
-pub fn render_scene(text_vector_fonts: Vec<Texture>, rect_vector_fonts: Vec<Rect>, playing_image_white_theme: &Texture, paused_image_white_theme: &Texture, next_image_white_theme: &Texture, previous_image_white_theme: &Texture, shuffle_on_image_white_theme: &Texture, shuffle_off_image_white_theme: &Texture, muted_audio_image_white_theme: &Texture, low_audio_image_white_theme: &Texture, medium_audio_image_white_theme: &Texture, high_audio_image_white_theme: &Texture, music_progress_bar_background: Rect, music_progress_bar_rect: Rect, volume_rect: Rect, playing_image: &Texture, paused_image: &Texture, next_image: &Texture, previous_image: &Texture, shuffle_on_image: &Texture, shuffle_off_image: &Texture, muted_audio_image: &Texture, low_audio_image: &Texture, medium_audio_image: &Texture, high_audio_image: &Texture, previous_rect: Rect, pause_rect: Rect, next_rect: Rect, shuffle_button_rect: Rect, volume_level_bar: Rect, under_volume_bar: Rect, background: Texture, album_picture: Texture, album_picture_rect: Rect, effect: Texture, audio_is_muted: bool, audio_is_low: bool, audio_is_medium: bool, audio_is_high: bool, canvas: &mut Canvas<Window>) {
+pub fn render_scene(text_vector_fonts: Vec<Texture>, rect_vector_fonts: Vec<Rect>, playing_image_white_theme: &Texture, paused_image_white_theme: &Texture, next_image_white_theme: &Texture, previous_image_white_theme: &Texture, shuffle_on_image_white_theme: &Texture, shuffle_off_image_white_theme: &Texture, muted_audio_image_white_theme: &Texture, low_audio_image_white_theme: &Texture, medium_audio_image_white_theme: &Texture, high_audio_image_white_theme: &Texture, music_progress_bar_background: Rect, music_progress_bar_rect: Rect, volume_rect: Rect, playing_image: &Texture, paused_image: &Texture, next_image: &Texture, previous_image: &Texture, shuffle_on_image: &Texture, shuffle_off_image: &Texture, muted_audio_image: &Texture, low_audio_image: &Texture, medium_audio_image: &Texture, high_audio_image: &Texture, buttons_rect_vec: &Vec<Rect>, volume_level_bar: Rect, under_volume_bar: Rect, background: Texture, album_picture: Texture, album_picture_rect: Rect, effect: Texture, audio_is_muted: bool, audio_is_low: bool, audio_is_medium: bool, audio_is_high: bool, canvas: &mut Canvas<Window>) {
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
 
@@ -83,10 +82,10 @@ pub fn render_scene(text_vector_fonts: Vec<Texture>, rect_vector_fonts: Vec<Rect
 
     // media buttons
     canvas.set_draw_color(DEFAULT_BUTTON_COLOR);
-    canvas.fill_rect(shuffle_button_rect).unwrap();
-    canvas.fill_rect(previous_rect).unwrap();
-    canvas.fill_rect(pause_rect).unwrap();
-    canvas.fill_rect(next_rect).unwrap();
+
+    for button in buttons_rect_vec {
+        canvas.fill_rect(*button).unwrap();
+    }
 
     // volume bar
     canvas.set_draw_color(DEFAULT_BACKGROUND_VOLUME_BAR_COLOR);
@@ -101,10 +100,10 @@ pub fn render_scene(text_vector_fonts: Vec<Texture>, rect_vector_fonts: Vec<Rect
     canvas.fill_rect(music_progress_bar_rect).unwrap();
 
     // media buttons
-    if !WHITE_THEME_FOR_ICONS { canvas.copy(next_image, None, next_rect).unwrap(); }
-    if !WHITE_THEME_FOR_ICONS { canvas.copy(previous_image, None, previous_rect).unwrap(); }
-    if WHITE_THEME_FOR_ICONS { canvas.copy(next_image_white_theme, None, next_rect).unwrap();}
-    if WHITE_THEME_FOR_ICONS { canvas.copy(previous_image_white_theme, None, previous_rect).unwrap(); }
+    if !WHITE_THEME_FOR_ICONS { canvas.copy(next_image, None, buttons_rect_vec[2]).unwrap(); }
+    if !WHITE_THEME_FOR_ICONS { canvas.copy(previous_image, None, buttons_rect_vec[0]).unwrap(); }
+    if WHITE_THEME_FOR_ICONS { canvas.copy(next_image_white_theme, None, buttons_rect_vec[2]).unwrap();}
+    if WHITE_THEME_FOR_ICONS { canvas.copy(previous_image_white_theme, None, buttons_rect_vec[0]).unwrap(); }
 
     // audio icon
     if audio_is_muted && !WHITE_THEME_FOR_ICONS {canvas.copy(muted_audio_image, None, volume_rect).unwrap(); }
@@ -120,18 +119,18 @@ pub fn render_scene(text_vector_fonts: Vec<Texture>, rect_vector_fonts: Vec<Rect
     // status icon
     let mut status_info = status_get();
     status_info.pop();
-    if status_info == "Paused" && !WHITE_THEME_FOR_ICONS { canvas.copy(paused_image, None, pause_rect).unwrap(); }
-    if status_info == "Paused" && WHITE_THEME_FOR_ICONS { canvas.copy(paused_image_white_theme, None, pause_rect).unwrap(); }
-    if status_info == "Playing" && !WHITE_THEME_FOR_ICONS { canvas.copy(playing_image, None, pause_rect).unwrap(); }
-    if status_info == "Playing" && WHITE_THEME_FOR_ICONS { canvas.copy(playing_image_white_theme, None, pause_rect).unwrap(); }
+    if status_info == "Playing" && !WHITE_THEME_FOR_ICONS { canvas.copy(paused_image, None, buttons_rect_vec[1]).unwrap(); }
+    if status_info == "Playing" && WHITE_THEME_FOR_ICONS { canvas.copy(paused_image_white_theme, None, buttons_rect_vec[1]).unwrap(); }
+    if status_info == "Paused" && !WHITE_THEME_FOR_ICONS { canvas.copy(playing_image, None, buttons_rect_vec[1]).unwrap(); }
+    if status_info == "Paused" && WHITE_THEME_FOR_ICONS { canvas.copy(playing_image_white_theme, None, buttons_rect_vec[1]).unwrap(); }
 
     // shuffle icon
     let mut shuffle_info = shuffle_get();
     shuffle_info.pop();
-    if shuffle_info == "On" && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_on_image, None, shuffle_button_rect).unwrap(); }
-    if shuffle_info == "On" && WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_on_image_white_theme, None, shuffle_button_rect).unwrap(); }
-    if shuffle_info == "Off" && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_off_image, None, shuffle_button_rect).unwrap(); }
-    if shuffle_info == "Off" && WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_off_image_white_theme, None, shuffle_button_rect).unwrap(); }
+    if shuffle_info == "On" && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_on_image, None, buttons_rect_vec[3]).unwrap(); }
+    if shuffle_info == "On" && WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_on_image_white_theme, None, buttons_rect_vec[3]).unwrap(); }
+    if shuffle_info == "Off" && !WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_off_image, None, buttons_rect_vec[3]).unwrap(); }
+    if shuffle_info == "Off" && WHITE_THEME_FOR_ICONS { canvas.copy(shuffle_off_image_white_theme, None, buttons_rect_vec[3]).unwrap(); }
 
     // fonts
     for index in 0..text_vector_fonts.len() { canvas.copy(&text_vector_fonts[index], None, rect_vector_fonts[index]).unwrap(); }

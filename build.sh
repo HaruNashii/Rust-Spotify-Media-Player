@@ -17,7 +17,7 @@ while true; do
 
     case $answer in
         [Yy]*)
-	    rm -rf $BUILD_PATH
+	    #rm -rf $BUILD_PATH
 	    cargo build --release --target-dir $BUILD_PATH
 	    while [[ ! -d "$BUILD_PATH" ]]; do 
 	    	sleep 1

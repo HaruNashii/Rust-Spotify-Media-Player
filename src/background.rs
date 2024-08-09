@@ -23,7 +23,8 @@ fn get_song_picture_data() -> String {
     let temp_dir = env::temp_dir();
     let exe_path = get_exe_path();
 
-    let holder_image_path = format!("{}{}", exe_path, "/ui/system/holder.png");
+    let holder_image_path = format!("{}{}", exe_path, "ui/system/holder.png");
+
     let song_picture_cache_name = clean_string_and_spaces(song_picture_link, String::from("https://i.scdn.co/image/"));
     let current_song_picture_path = format!("{}{}{}{}", temp_dir.display(),"/.background/",&song_picture_cache_name,".png");
 
