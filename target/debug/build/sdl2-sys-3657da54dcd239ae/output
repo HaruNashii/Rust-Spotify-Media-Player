@@ -1,4 +1,0 @@
-cargo:include=/home/haru/.cargo/git/checkouts/rust-sdl2-f20db51beeece243/76748c5/sdl2-sys/SDL/include
-cargo:rustc-flags=-l SDL2
-cargo:rustc-flags=-l SDL2_image
-cargo:rustc-flags=-l SDL2_ttf
