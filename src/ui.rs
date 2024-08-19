@@ -1,4 +1,3 @@
-
 use sdl2::image::LoadTexture;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
@@ -8,8 +7,6 @@ use sdl2::video::WindowContext;
 use playerctl::PlayerCtl;
 
 use crate::playerctl_extra::*;
-use crate::get_exe_path;
-use crate::convert_to_u32;
 
 
 //====================================//
@@ -59,9 +56,6 @@ const PROGRESS_BAR_SIZE: [u32; 2] = [675, 20];
 //====================================//
 //========(ELEMENTS ARGUMENTS)========//
 //====================================//
-// fonts
-const DEFAULT_FONT_PATH: &str = "fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf";
-const DEFAULT_FONT_COLOR: Color = Color::RGB(255, 255, 255);
 
 
 
@@ -72,14 +66,11 @@ const DEFAULT_FONT_COLOR: Color = Color::RGB(255, 255, 255);
 //-----------THE TOOLS FUNCTIONS THAT IS USED BY THE DATA CREATORS FUNCTIONS-----------//
 //-------------------------------------------------------------------------------------//
 //=====================================================================================//
-fn font_generator<'a>(additional_text: &str, texture_creator: &'a TextureCreator<sdl2::video::WindowContext>, size: u16, text: String, x: i32, y: i32, ) -> (Texture<'a>, Rect) {
+fn font_generator<'a>(additional_text: &str, texture_creator: &'a TextureCreator<WindowContext>, size: u16, text: String, x: i32, y: i32, ) -> (Texture<'a>, Rect) {
     let ttf_context = sdl2::ttf::init().unwrap();
 
-    let exe_path = get_exe_path();
-    let font_path = format!("{}{}", exe_path, DEFAULT_FONT_PATH);
-
-    let font = ttf_context.load_font(font_path, size).unwrap();
-    let surface = font.render(&format!("{}{}", additional_text, text)).blended(DEFAULT_FONT_COLOR).unwrap();
+    let font = ttf_context.load_font("/usr/share/fonts/TTF/JetBrainsMono-Bold.ttf", size).unwrap();
+    let surface = font.render(&format!("{}{}", additional_text, text)).blended(Color::RGB(255, 255, 255)).unwrap();
     let texture = texture_creator.create_texture_from_surface(&surface).unwrap();
     let font_rect = Rect::new(x, y, surface.width(), surface.height());
 
@@ -88,6 +79,16 @@ fn font_generator<'a>(additional_text: &str, texture_creator: &'a TextureCreator
 
 
 
+fn convert_to_u32(string: &str) -> u32 
+{
+    let raw_string = string.replace(':', "");
+    let mut string = raw_string.replace('\'', "");
+    string.pop();
+    if string.is_empty() { string.push('0')};
+    let u32_to_return: u32 = string.parse().unwrap();
+
+    u32_to_return
+}
 
 
 

@@ -55,5 +55,6 @@ pub fn status_get() -> String {
 }
 
 pub fn art_url_get() -> String {
-    command("playerctl --player=spotify -s metadata mpris:artUrl")
+    let string = command("playerctl --player=spotify -s metadata mpris:artUrl");
+    string.replace("\n", "")
 }
