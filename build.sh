@@ -1,10 +1,10 @@
 #!/bin/bash 
 
 BUILD_PATH=$PWD/target/
-PATH_TO_COPY=$PWD/target/release/
+PATH_TO_COPY=$PWD/target/debug/
 #MAKE SURE THAT THIS UNUSED FOLDERS HAVE THE SAME START PART PATH OF THE BUILD_PATH
-UNUSED_FOLDER_1=$PWD/target/release/examples
-UNUSED_FOLDER_2=$PWD/target/release/incremental 
+UNUSED_FOLDER_1=$PWD/target/debug/examples
+UNUSED_FOLDER_2=$PWD/target/debug/incremental 
 UI_PATH=$PWD/ui
 FONT_PATH=$PWD/fonts
 
@@ -18,7 +18,8 @@ while true; do
     case $answer in
         [Yy]*)
 	    #rm -rf $BUILD_PATH
-	    cargo build --release --target-dir $BUILD_PATH
+	    #cargo build --release --target-dir $BUILD_PATH
+	    cargo build --target-dir $BUILD_PATH
 	    while [[ ! -d "$BUILD_PATH" ]]; do 
 	    	sleep 1
 	    done
