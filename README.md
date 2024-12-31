@@ -10,6 +10,8 @@
 This APP Supports theming the app by changing the icons png on the ui folder or changing some icons via code
 also ever elements in this app can change position, size and color!
 
+## Showcase
+![image](https://github.com/user-attachments/assets/4e510946-14a1-4c37-88f6-f5cd7f6ae99a)
 
 
 
